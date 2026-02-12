@@ -46,6 +46,24 @@ tbody tr.row-selected td{color:#1e40af}
 .input-field:focus{background:#fff;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
 .input-field::placeholder{color:#94a3b8}
 select.input-field{cursor:pointer;appearance:auto}
+/* Estilos para date inputs (calendarios) */
+input[type="date"].input-field{
+  cursor:pointer;
+  color:#475569;
+  font-weight:500;
+}
+input[type="date"].input-field::-webkit-calendar-picker-indicator{
+  cursor:pointer;
+  opacity:0.6;
+  transition:opacity .15s;
+}
+input[type="date"].input-field:hover::-webkit-calendar-picker-indicator{
+  opacity:1;
+}
+input[type="date"].input-field:focus{
+  border-color:#2AAAD6;
+  box-shadow:0 0 0 3px rgba(42,170,214,.1);
+}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 22px;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border:none;transition:all .15s}
 .btn:active{transform:scale(.97)}
 
@@ -324,11 +342,11 @@ nav .nav-item.active svg {
           </div>
           <div class="col-span-2">
             <label class="block text-xs font-semibold text-slate-500 mb-2">Desde</label>
-            <input id="b-fi" placeholder="DD/MM/AAAA" class="input-field">
+            <input id="b-fi" type="date" class="input-field">
           </div>
           <div class="col-span-2">
             <label class="block text-xs font-semibold text-slate-500 mb-2">Hasta</label>
-            <input id="b-ff" placeholder="DD/MM/AAAA" class="input-field">
+            <input id="b-ff" type="date" class="input-field">
           </div>
           <div class="col-span-3">
             <button onclick="previewBoleta()" class="btn bg-blue-600 hover:bg-blue-700 text-white w-full shadow-lg shadow-blue-500/25">
@@ -426,9 +444,9 @@ nav .nav-item.active svg {
           </div>
           <input id="h-emp" placeholder="Nombre o codigo..." class="input-field !h-9 !text-xs !w-48">
           <span class="text-[11px] text-slate-400 font-medium">Desde</span>
-          <input id="h-fi" placeholder="DD/MM/AAAA" class="input-field !h-9 !text-xs !w-32">
+          <input id="h-fi" type="date" class="input-field !h-9 !text-xs !w-40">
           <span class="text-[11px] text-slate-400 font-medium">Hasta</span>
-          <input id="h-ff" placeholder="DD/MM/AAAA" class="input-field !h-9 !text-xs !w-32">
+          <input id="h-ff" type="date" class="input-field !h-9 !text-xs !w-40">
           <button onclick="loadHistorico()" class="btn bg-blue-600 hover:bg-blue-700 text-white !h-9 !text-xs !px-4">Buscar</button>
           <button onclick="clearHistFiltros()" class="btn bg-white border-2 border-slate-200 text-slate-500 hover:bg-slate-50 !h-9 !text-xs !px-4">Limpiar</button>
         </div>
@@ -612,6 +630,43 @@ nav .nav-item.active svg {
 
 <script>
 const F = n => `L. ${Number(n).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+
+// ── Funciones de conversión de fecha ──
+function dateToInput(ddmmyyyy) {
+  // Convierte DD/MM/AAAA a YYYY-MM-DD (formato input date)
+  if(!ddmmyyyy) return '';
+  const parts = ddmmyyyy.split('/');
+  if(parts.length !== 3) return '';
+  return `${parts[2]}-${parts[1]}-${parts[0]}`;
+}
+
+function inputToDate(yyyymmdd) {
+  // Convierte YYYY-MM-DD a DD/MM/AAAA (formato display)
+  if(!yyyymmdd) return '';
+  const parts = yyyymmdd.split('-');
+  if(parts.length !== 3) return '';
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+
+function getTodayInput() {
+  // Retorna fecha de hoy en formato YYYY-MM-DD
+  const now = new Date();
+  return now.toISOString().split('T')[0];
+}
+
+function getFirstDayOfMonth() {
+  // Retorna primer día del mes en formato YYYY-MM-DD
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+}
+
+function getLastDayOfMonth() {
+  // Retorna último día del mes en formato YYYY-MM-DD
+  const now = new Date();
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+}
+
 let selectedEmpId=null,editingId=null,boletaEmp=null;
 document.getElementById('current-date').textContent=new Date().toLocaleDateString('es-HN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 const titles={personal:'Gestion de Personal',boleta:'Boleta de Pago',historico:'Historico de Pagos',config:'Configuracion'};
@@ -733,17 +788,23 @@ async function loadBoletaEmps(){
   const data=await(await fetch('/api/empleados')).json();
   const sel=document.getElementById('b-emp');
   sel.innerHTML='<option value="">Seleccione empleado</option>'+data.map(e=>`<option value="${e.id}">${e.cod_empleado} — ${e.nombre_empleado}</option>`).join('');
+  
+  // Establecer fechas por defecto (primer y último día del mes actual)
   if(!document.getElementById('b-fi').value){
-    const now=new Date(),pm=now.getMonth()===0?12:now.getMonth(),py=now.getMonth()===0?now.getFullYear()-1:now.getFullYear();
-    document.getElementById('b-fi').value=`20/${String(pm).padStart(2,'0')}/${py}`;
-    document.getElementById('b-ff').value=`20/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+    document.getElementById('b-fi').value = getFirstDayOfMonth();
+    document.getElementById('b-ff').value = getLastDayOfMonth();
   }
 }
 async function onBoletaEmp(){const id=document.getElementById('b-emp').value;if(id)boletaEmp=await(await fetch('/api/empleados/'+id)).json()}
 function previewBoleta(){
   const e=boletaEmp;if(!e)return Swal.fire({icon:'info',title:'Sin Seleccion',text:'Seleccione un empleado.',confirmButtonColor:'#2563eb'});
-  const fi=document.getElementById('b-fi').value,ff=document.getElementById('b-ff').value;
-  if(!fi||!ff)return Swal.fire({icon:'warning',title:'Fechas',text:'Ingrese ambas fechas.',confirmButtonColor:'#2563eb'});
+  const fi_input=document.getElementById('b-fi').value,ff_input=document.getElementById('b-ff').value;
+  if(!fi_input||!ff_input)return Swal.fire({icon:'warning',title:'Fechas',text:'Ingrese ambas fechas.',confirmButtonColor:'#2563eb'});
+  
+  // Convertir a formato DD/MM/AAAA para display
+  const fi = inputToDate(fi_input);
+  const ff = inputToDate(ff_input);
+  
   const sal=e.salario_mensual,ihss=e.ihss||0,isr=e.isr||0,otro=e.otro||0,obs=e.observacion_otro||'';
   const td=ihss+isr+otro,neto=sal-td;
   let otroRow=otro>0?`<div class="flex justify-between py-2 border-b border-red-100"><span class="text-[13px] text-slate-600">${obs?'Otro ('+obs+')':'Otra Deduccion'}</span><span class="text-[13px] font-semibold text-red-500">-${F(otro)}</span></div>`:'';
@@ -773,8 +834,15 @@ function previewBoleta(){
 }
 
 async function _boletaAction(endpoint){
-  const id=document.getElementById('b-emp').value,fi=document.getElementById('b-fi').value,ff=document.getElementById('b-ff').value;
-  if(!id||!fi||!ff)return;
+  const id=document.getElementById('b-emp').value;
+  const fi_input=document.getElementById('b-fi').value;
+  const ff_input=document.getElementById('b-ff').value;
+  if(!id||!fi_input||!ff_input)return;
+  
+  // Convertir fechas a formato DD/MM/AAAA para el servidor
+  const fi = inputToDate(fi_input);
+  const ff = inputToDate(ff_input);
+  
   Swal.fire({title:'Procesando...',text:'Generando boleta de pago',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
   try{
     const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:Number(id),fi,ff})});
@@ -789,8 +857,14 @@ function boletaBoth(){_boletaAction('/api/boleta/both')}
 
 // ── GENERAR TODOS ──
 async function generarTodos(){
-  const fi=document.getElementById('b-fi').value,ff=document.getElementById('b-ff').value;
-  if(!fi||!ff)return Swal.fire({icon:'warning',title:'Fechas Requeridas',text:'Ingrese las fechas Desde y Hasta antes de generar.',confirmButtonColor:'#2563eb'});
+  const fi_input=document.getElementById('b-fi').value;
+  const ff_input=document.getElementById('b-ff').value;
+  if(!fi_input||!ff_input)return Swal.fire({icon:'warning',title:'Fechas Requeridas',text:'Ingrese las fechas Desde y Hasta antes de generar.',confirmButtonColor:'#2563eb'});
+  
+  // Convertir a formato DD/MM/AAAA para display y servidor
+  const fi = inputToDate(fi_input);
+  const ff = inputToDate(ff_input);
+  
   const {value:modo}=await Swal.fire({
     title:'Generar Boletas para Todos',
     html:`<p class="text-sm text-slate-500 mb-4">Se generaran boletas para <b>todos los empleados</b> del periodo <b>${fi}</b> al <b>${ff}</b>.</p><p class="text-xs text-slate-400">Seleccione el metodo de generacion:</p>`,
@@ -821,7 +895,14 @@ async function generarTodos(){
 
 // ── HISTORICO ──
 async function loadHistorico(){
-  const emp=document.getElementById('h-emp').value,fi=document.getElementById('h-fi').value,ff=document.getElementById('h-ff').value;
+  const emp=document.getElementById('h-emp').value;
+  const fi_input=document.getElementById('h-fi').value;
+  const ff_input=document.getElementById('h-ff').value;
+  
+  // Convertir fechas a formato DD/MM/AAAA para el servidor
+  const fi = fi_input ? inputToDate(fi_input) : '';
+  const ff = ff_input ? inputToDate(ff_input) : '';
+  
   const r=await fetch(`/api/historico?emp=${encodeURIComponent(emp)}&fi=${encodeURIComponent(fi)}&ff=${encodeURIComponent(ff)}`);
   const data=await r.json();
   document.getElementById('tb-hist').innerHTML=data.rows.map(r=>{
