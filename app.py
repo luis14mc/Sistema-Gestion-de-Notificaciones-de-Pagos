@@ -5,6 +5,12 @@ Sistema de Pagos CNI - Aplicación de Escritorio
 Consejo Nacional de Inversiones - Honduras
 
 Aplicación de escritorio para gestión de recursos humanos y nómina.
+
+Desarrollado por: Ing. Luis Martínez
+Software Developer
+Email: luismartinez.94mc@gmail.com
+Versión: 2.0
+Año: 2026
 """
 
 import webview

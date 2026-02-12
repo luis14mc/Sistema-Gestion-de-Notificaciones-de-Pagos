@@ -120,8 +120,9 @@ El ejecutable se generará en la carpeta `dist/`.
 ## 📞 Soporte
 
 Para consultas técnicas o soporte:
-- **Desarrollador**: Luis
-- **Email**: luis@cni.hn
+- **Desarrollador**: Ing. Luis Martínez
+- **Rol**: Software Developer
+- **Email**: luismartinez.94mc@gmail.com
 
 ---
 
@@ -141,6 +142,7 @@ Software de uso interno. Todos los derechos reservados.
 - Generación masiva de boletas
 - Colores institucionales CNI
 - Manual de usuario y técnico
+- **Desarrollado por**: Ing. Luis Martínez - Software Developer
 
 ### v1.0 (2025)
 - Versión inicial desktop con Tkinter

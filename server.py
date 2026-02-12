@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """
-Sistema RRHH — Backend Flask
+Sistema de Pagos CNI - Backend Flask
+Consejo Nacional de Inversiones - Honduras
+
+Desarrollado por: Ing. Luis Martínez
+Software Developer | luismartinez.94mc@gmail.com
+Versión 2.0 - 2026
 """
 import os, sqlite3, smtplib, json
 from datetime import datetime

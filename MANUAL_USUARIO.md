@@ -323,7 +323,7 @@ Para probar que funciona:
 **Error: "No se pudo conectar al servidor"**
 - ✓ Verificar conexión a internet
 - ✓ Verificar que puerto 587 no esté bloqueado
-- ✓ Contactar a Luis si persiste
+- ✓ Contactar a Ing. Luis Martínez si persiste
 
 ---
 
@@ -630,7 +630,7 @@ Para generar un reporte completo:
    ```bash
    cp rrhh_cni_backup.db rrhh_cni.db
    ```
-4. Si no hay backup, contactar a Luis
+4. Si no hay backup, contactar a Ing. Luis Martínez
 
 **Prevención**:
 - Hacer backups periódicos de `rrhh_cni.db`
@@ -670,8 +670,9 @@ Para generar un reporte completo:
 
 Para soporte técnico o dudas:
 
-- **Desarrollador**: Luis
-- **Email**: luis@cni.hn
+- **Desarrollador**: Ing. Luis Martínez
+- **Rol**: Software Developer
+- **Email**: luismartinez.94mc@gmail.com
 
 ### Información a proporcionar
 
@@ -702,7 +703,7 @@ Al reportar un problema, incluir:
 2. **Practica con datos de prueba** antes de usar datos reales
 3. **Mantén actualizada** la configuración según cambios legales
 4. **Consulta este manual** ante cualquier duda
-5. **Reporta problemas** a Luis para mejorar el sistema
+5. **Reporta problemas** a Ing. Luis Martínez para mejorar el sistema
 
 ---
 
@@ -712,4 +713,4 @@ Al reportar un problema, incluir:
 
 **Última actualización**: Febrero 2026  
 **Versión del Manual**: 2.0  
-**Desarrollado por**: Luis
+**Desarrollado por**: Ing. Luis Martínez - Software Developer

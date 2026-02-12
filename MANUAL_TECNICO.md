@@ -668,8 +668,9 @@ if "nueva_columna" not in cols:
 ## 📞 Contacto Técnico
 
 Para dudas técnicas o reportar bugs:
-- Desarrollador: Luis
-- Email: luis@cni.hn
+- **Desarrollador**: Ing. Luis Martínez
+- **Rol**: Software Developer
+- **Email**: luismartinez.94mc@gmail.com
 
 ---
 
