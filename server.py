@@ -546,7 +546,7 @@ def _generar_auditoria(rows, filtro=""):
     pdf=FPDF(); pdf.add_page("L"); pdf.set_auto_page_break(True,20)
     pdf.set_fill_color(37,99,235); pdf.rect(0,0,297,24,"F")
     pdf.set_font("Helvetica","B",14); pdf.set_text_color(255,255,255); pdf.set_y(5)
-    pdf.cell(0,10,"REPORTE DE AUDITORIA — HISTORICO DE PAGOS",align="C",new_x=XPos.LMARGIN,new_y=YPos.NEXT)
+    pdf.cell(0,10,"REPORTE DE AUDITORIA - HISTORICO DE PAGOS",align="C",new_x=XPos.LMARGIN,new_y=YPos.NEXT)
     pdf.ln(6)
     cols=[("Fecha",26),("Cod",20),("Empleado",50),("Cargo",38),("Periodo",40),
           ("Salario",26),("IHSS",20),("ISR",20),("Otro",20),("Deducc.",26),("Neto",26),("Tipo",15)]
@@ -670,7 +670,7 @@ def _enviar_email(smtp_cfg, emp, fi, ff, ruta_pdf):
   
   <!-- Footer -->
   <div style="background:#f8fafc;padding:20px 24px;text-align:center;border-top:1px solid #e2e8f0">
-    <p style="margin:0;font-size:11px;color:#94a3b8">© 2026 CNI Honduras • Sistema de Recursos Humanos</p>
+    <p style="margin:0;font-size:11px;color:#94a3b8">(c) 2026 CNI Honduras - Sistema de Recursos Humanos</p>
     <p style="margin:4px 0 0;font-size:10px;color:#cbd5e1">Consejo Nacional de Inversiones</p>
   </div>
 </div>
