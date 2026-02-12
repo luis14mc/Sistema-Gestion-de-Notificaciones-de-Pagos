@@ -725,6 +725,8 @@ Al reportar un problema, incluir:
 
 ---
 
-**Última actualización**: Febrero 2026  
+**Última actualización**: 11 de Febrero 2026  
+**Versión del Sistema**: 2.0.0  
 **Versión del Manual**: 2.0  
+**Estado**: Producción  
 **Desarrollado por**: Ing. Luis Martínez - Software Developer

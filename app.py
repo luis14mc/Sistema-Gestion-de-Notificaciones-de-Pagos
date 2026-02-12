@@ -9,8 +9,9 @@ Aplicación de escritorio para gestión de recursos humanos y nómina.
 Desarrollado por: Ing. Luis Martínez
 Software Developer
 Email: luismartinez.94mc@gmail.com
-Versión: 2.0
-Año: 2026
+Versión: 2.0.0
+Fecha: 11 de Febrero 2026
+Estado: Producción
 """
 
 import webview

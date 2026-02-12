@@ -5,7 +5,8 @@ Consejo Nacional de Inversiones - Honduras
 
 Desarrollado por: Ing. Luis Martínez
 Software Developer | luismartinez.94mc@gmail.com
-Versión 2.0 - 2026
+Versión 2.0.0 - 11 de Febrero 2026
+Estado: Producción
 """
 import os, sqlite3, smtplib, json
 from datetime import datetime

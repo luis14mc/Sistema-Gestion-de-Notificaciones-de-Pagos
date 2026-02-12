@@ -3,10 +3,12 @@
 **Sistema de Gestión de Recursos Humanos y Nómina**  
 Consejo Nacional de Inversiones - Honduras
 
-![Version](https://img.shields.io/badge/version-2.0-blue)
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
+![Release](https://img.shields.io/badge/release-Feb_2026-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.8+-green)
 ![Flask](https://img.shields.io/badge/flask-3.0-red)
 ![License](https://img.shields.io/badge/license-Privado-orange)
+![Status](https://img.shields.io/badge/status-Production-success)
 
 ---
 
@@ -137,17 +139,39 @@ Software de uso interno. Todos los derechos reservados.
 
 ---
 
-## 🔄 Versiones
+## 🔄 Historial de Versiones
 
-### v2.0 (Febrero 2026)
-- Migración a aplicación web con Flask
-- Interfaz moderna con Tailwind CSS
-- Cálculos automáticos de ISR e IHSS
-- Generación masiva de boletas
-- Colores institucionales CNI
-- Manual de usuario y técnico
-- **Desarrollado por**: Ing. Luis Martínez - Software Developer
+### v2.0.0 - Febrero 11, 2026 (Actual)
+**Estado**: ✅ Producción
+
+**Nuevas Características**:
+- ✨ Migración completa a aplicación web Flask + PyWebView
+- 🎨 Interfaz moderna con Tailwind CSS 3
+- 🧮 Cálculo automático de ISR con tabla progresiva configurable
+- 💰 Cálculo automático de IHSS con tasas y techo configurables
+- 📄 Generación individual y masiva de boletas PDF
+- 📧 Envío automático de boletas por email (Office 365)
+- 📊 Histórico de pagos con filtros y reportes de auditoría
+- 🎨 Implementación de colores institucionales CNI
+- 📚 Documentación completa (3 manuales profesionales)
+- 🔐 Sistema de configuración integrado (ISR, IHSS, SMTP)
+- 🖥️ Modo desktop con ventana nativa
+
+**Mejoras Técnicas**:
+- Arquitectura SPA (Single Page Application)
+- APIs REST completas
+- Base de datos SQLite optimizada
+- Código modularizado y documentado
+- Control de versiones Git implementado
+
+**Desarrollado por**: Ing. Luis Martínez - Software Developer  
+**Email**: luismartinez.94mc@gmail.com
+
+---
 
 ### v1.0 (2025)
+**Estado**: ⚠️ Deprecado
+
 - Versión inicial desktop con Tkinter
 - Funcionalidades básicas de nómina
+- Sin cálculos automáticos
