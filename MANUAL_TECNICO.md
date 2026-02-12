@@ -668,8 +668,8 @@ if "nueva_columna" not in cols:
 ## 📞 Contacto Técnico
 
 Para dudas técnicas o reportar bugs:
-- Departamento de TI - Consejo Nacional de Inversiones
-- Email: soporte@cni.hn
+- Desarrollador: Luis
+- Email: luis@cni.hn
 
 ---
 

@@ -119,7 +119,9 @@ El ejecutable se generará en la carpeta `dist/`.
 
 ## 📞 Soporte
 
-Para consultas técnicas o soporte, contactar al departamento de TI del Consejo Nacional de Inversiones.
+Para consultas técnicas o soporte:
+- **Desarrollador**: Luis
+- **Email**: luis@cni.hn
 
 ---
 

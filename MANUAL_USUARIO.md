@@ -323,7 +323,7 @@ Para probar que funciona:
 **Error: "No se pudo conectar al servidor"**
 - ✓ Verificar conexión a internet
 - ✓ Verificar que puerto 587 no esté bloqueado
-- ✓ Contactar a TI si persiste
+- ✓ Contactar a Luis si persiste
 
 ---
 
@@ -630,7 +630,7 @@ Para generar un reporte completo:
    ```bash
    cp rrhh_cni_backup.db rrhh_cni.db
    ```
-4. Si no hay backup, contactar a TI
+4. Si no hay backup, contactar a Luis
 
 **Prevención**:
 - Hacer backups periódicos de `rrhh_cni.db`
@@ -670,9 +670,8 @@ Para generar un reporte completo:
 
 Para soporte técnico o dudas:
 
-- **Departamento**: TI - Consejo Nacional de Inversiones
-- **Email**: soporte@cni.hn
-- **Teléfono**: +504 XXXX-XXXX
+- **Desarrollador**: Luis
+- **Email**: luis@cni.hn
 
 ### Información a proporcionar
 
@@ -703,7 +702,7 @@ Al reportar un problema, incluir:
 2. **Practica con datos de prueba** antes de usar datos reales
 3. **Mantén actualizada** la configuración según cambios legales
 4. **Consulta este manual** ante cualquier duda
-5. **Reporta problemas** a TI para mejorar el sistema
+5. **Reporta problemas** a Luis para mejorar el sistema
 
 ---
 
@@ -713,4 +712,4 @@ Al reportar un problema, incluir:
 
 **Última actualización**: Febrero 2026  
 **Versión del Manual**: 2.0  
-**Elaborado por**: Departamento de TI - CNI
+**Desarrollado por**: Luis
