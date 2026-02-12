@@ -1,0 +1,21 @@
+# Sistema de Pagos CNI - Dependencias Python
+# Consejo Nacional de Inversiones - Honduras
+
+# Framework web
+Flask==3.0.0
+Werkzeug==3.0.1
+
+# Base de datos
+# SQLite viene incluido con Python
+
+# Generación de PDFs
+fpdf2==2.7.9
+
+# Interfaz de escritorio
+pywebview==4.4.1
+
+# Empaquetado (opcional)
+pyinstaller==6.3.0
+
+# Utilidades
+python-dotenv==1.0.0

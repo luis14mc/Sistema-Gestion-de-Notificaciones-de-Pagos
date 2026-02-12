@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sistema de Pagos — Consejo Nacional de Inversiones</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] },
+      colors: {
+        sidebar: { DEFAULT:'#233981', hover:'#2d459d', active:'#1a2a63' },
+        cni: {
+          blue: '#233981',
+          cyan: '#2AAAD6',
+          green: '#1BAE64'
+        }
+      }
+    }
+  }
+}
+</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+tbody tr.row-selected{background:#eff6ff !important}
+tbody tr.row-selected td{color:#1e40af}
+.panel{display:none}.panel.active{display:block;animation:fadeUp .25s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.swal2-popup{font-family:'Inter',sans-serif!important;border-radius:16px!important}
+.swal2-title{font-weight:700!important;font-size:1.15rem!important}
+.swal2-confirm{border-radius:10px!important;font-weight:600!important;padding:10px 24px!important}
+.swal2-cancel{border-radius:10px!important;font-weight:600!important;padding:10px 24px!important}
+.input-field{width:100%;height:42px;padding:0 14px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;font-family:inherit;color:#1e293b;outline:none;transition:all .15s}
+.input-field:focus{background:#fff;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.input-field::placeholder{color:#94a3b8}
+select.input-field{cursor:pointer;appearance:auto}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 22px;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border:none;transition:all .15s}
+.btn:active{transform:scale(.97)}
+
+/* Mejora de contraste para el Sidebar */
+nav .nav-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  padding: 0.75rem 1rem !important;
+  border-radius: 0.75rem !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  border-left: 4px solid transparent !important;
+  text-decoration: none !important;
+}
+nav .nav-item:hover {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+nav .nav-item.active {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-left-color: #2AAAD6 !important;
+}
+nav .nav-item svg {
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0 !important;
+  opacity: 0.5 !important;
+}
+nav .nav-item:hover svg,
+nav .nav-item.active svg {
+  opacity: 1 !important;
+  color: #2AAAD6 !important;
+}
+</style>
+</head>
+
+<body class="bg-gray-100 font-sans text-slate-800 flex h-screen overflow-hidden antialiased">
+
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+<aside class="w-[250px] min-w-[250px] bg-sidebar flex flex-col">
+  <!-- Brand -->
+  <div class="px-6 py-6 border-b border-white/[0.06]">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center">
+        <img src="/static/logo_cni.png" alt="CNI" class="w-full h-full object-contain">
+      </div>
+      <div>
+        <h1 class="text-white font-bold text-base leading-tight">Sistema de Pagos</h1>
+        <span class="text-white/60 text-[11px] font-medium">Consejo Nacional de Inversiones</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu -->
+  <nav class="flex-1 py-5 px-3">
+    <p class="text-[10px] font-bold text-white/40 tracking-[0.15em] uppercase px-3 mb-3">Menu Principal</p>
+    <div class="space-y-1">
+      <a class="nav-item" data-page="personal" onclick="go('personal')">
+        <svg class="w-[18px] h-[18px] shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+        <span>Personal</span>
+      </a>
+      <a class="nav-item" data-page="boleta" onclick="go('boleta')">
+        <svg class="w-[18px] h-[18px] shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+        <span>Boleta de Pago</span>
+      </a>
+      <a class="nav-item" data-page="historico" onclick="go('historico')">
+        <svg class="w-[18px] h-[18px] shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>Historico de Pagos</span>
+      </a>
+      <a class="nav-item" data-page="config" onclick="go('config')">
+        <svg class="w-[18px] h-[18px] shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span>Configuracion</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Footer -->
+  <div class="px-6 py-4 border-t border-white/[0.06] flex items-center justify-between">
+    <span class="text-[10px] text-slate-600 font-medium">v2.0 Web</span>
+    <span class="text-[10px] font-bold text-blue-400 tracking-wide">CNI</span>
+  </div>
+</aside>
+
+<!-- ═══════════════════ MAIN ═══════════════════ -->
+<div class="flex-1 flex flex-col overflow-hidden bg-gray-50">
+
+  <!-- Topbar -->
+  <header class="h-14 min-h-[56px] bg-white border-b border-slate-200/80 flex items-center justify-between px-7 shadow-sm">
+    <h2 class="text-[15px] font-bold text-slate-700" id="page-title">Gestion de Personal</h2>
+    <div class="flex items-center gap-4">
+      <span class="text-xs text-slate-400 font-medium hidden sm:inline" id="current-date"></span>
+      <div class="w-9 h-9 rounded-full bg-cni-blue flex items-center justify-center text-white text-[11px] font-bold shadow-md shadow-blue-200">RH</div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="flex-1 overflow-y-auto p-7">
+
+    <!-- ════════════════ PANEL: PERSONAL ════════════════ -->
+    <div id="p-personal" class="panel active">
+      <div id="personal-list">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-[22px] font-extrabold text-slate-800 tracking-tight">Gestion de Personal</h2>
+            <p class="text-sm text-slate-500 mt-1">Administre los empleados de la organizacion</p>
+          </div>
+          <button onclick="showForm()" class="btn bg-cni-blue hover:bg-cni-blue/90 text-white shadow-lg shadow-blue-500/25">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            Nuevo Empleado
+          </button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-3 gap-5 mb-6">
+          <div class="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-cni-blue/10 flex items-center justify-center">
+                <svg class="w-6 h-6 text-cni-blue" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+              </div>
+              <div>
+                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total Empleados</p>
+                <p class="text-[26px] font-extrabold text-cni-blue leading-none mt-0.5" id="st-total">0</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-cni-green/10 flex items-center justify-center">
+                <svg class="w-6 h-6 text-cni-green" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>
+              </div>
+              <div>
+                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Planilla Mensual</p>
+                <p class="text-[22px] font-extrabold text-cni-green leading-none mt-0.5" id="st-plan">L. 0.00</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-cni-cyan/10 flex items-center justify-center">
+                <svg class="w-6 h-6 text-cni-cyan" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+              </div>
+              <div>
+                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Salario Promedio</p>
+                <p class="text-[22px] font-extrabold text-cni-cyan leading-none mt-0.5" id="st-prom">L. 0.00</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search -->
+        <div class="relative mb-5">
+          <svg class="w-[18px] h-[18px] text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+          <input type="text" id="search-emp" placeholder="Buscar por nombre, codigo o cargo..." oninput="loadEmpleados()" class="input-field !pl-12 !h-12 !rounded-xl !border-slate-200 !bg-white shadow-sm">
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-slate-50/80">
+                  <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Codigo</th>
+                  <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nombre</th>
+                  <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Cargo</th>
+                  <th class="px-5 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Salario</th>
+                  <th class="px-5 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">IHSS</th>
+                  <th class="px-5 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider" title="Calculado automaticamente">ISR <span class="text-teal-500">*</span></th>
+                  <th class="px-5 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Otro</th>
+                  <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Correo</th>
+                  <th class="px-5 py-3.5 text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider w-24">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tb-emp" class="divide-y divide-slate-100 text-[13px]"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form View -->
+      <div id="personal-form" style="display:none">
+        <div class="flex items-center gap-4 mb-6">
+          <button onclick="hideForm()" class="w-10 h-10 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:border-slate-300 transition shadow-sm cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+          </button>
+          <div>
+            <h2 class="text-[22px] font-extrabold text-slate-800 tracking-tight" id="form-title">Nuevo Empleado</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Complete los datos del empleado</p>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200/60 p-7 shadow-sm max-w-3xl">
+          <!-- Info section -->
+          <div class="flex items-center gap-2 mb-5 pb-4 border-b border-slate-100">
+            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+            <h3 class="text-sm font-bold text-slate-700">Informacion del Empleado</h3>
+          </div>
+          <div class="grid grid-cols-2 gap-5 mb-5">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-2">Codigo <span class="text-red-400">*</span></label><input id="f-cod" placeholder="CNI001" class="input-field bg-slate-100 cursor-not-allowed" readonly></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-2">Nombre Completo <span class="text-red-400">*</span></label><input id="f-nombre" placeholder="Nombre del empleado" class="input-field"></div>
+          </div>
+          <div class="grid grid-cols-2 gap-5 mb-6">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-2">Cargo <span class="text-red-400">*</span></label><input id="f-cargo" placeholder="Puesto" class="input-field"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-2">Salario Mensual (L.) <span class="text-red-400">*</span></label><input id="f-sal" type="number" step="0.01" placeholder="0.00" class="input-field" oninput="updateFormISR()"></div>
+          </div>
+          <!-- Deductions section -->
+          <div class="flex items-center gap-2 mb-5 pb-4 border-b border-slate-100">
+            <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <h3 class="text-sm font-bold text-slate-700">Deducciones</h3>
+          </div>
+          <div class="grid grid-cols-3 gap-5 mb-5">
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 mb-2">IHSS (L.) <span class="text-emerald-500 font-bold">Auto</span></label>
+              <div class="input-field !bg-emerald-50 !border-emerald-200 flex items-center">
+                <svg class="w-4 h-4 text-emerald-500 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span id="f-ihss-display" class="text-sm font-bold text-emerald-700">L. 0.00</span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 mb-2">ISR (L.) <span class="text-teal-500 font-bold">Auto</span></label>
+              <div class="flex items-center h-[42px] px-4 bg-teal-50 border-2 border-teal-200 rounded-[10px]">
+                <svg class="w-4 h-4 text-teal-500 mr-2 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span id="f-isr-display" class="text-sm font-bold text-teal-700">L. 0.00</span>
+              </div>
+            </div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-2">Otro Descuento (L.)</label><input id="f-otro" type="number" step="0.01" value="0" class="input-field"></div>
+          </div>
+          <div class="mb-6">
+            <label class="block text-xs font-semibold text-slate-500 mb-2">Observacion (detalle otro descuento)</label>
+            <input id="f-obs" placeholder="Ej: Prestamo, Embargo..." class="input-field">
+          </div>
+          <!-- Contact section -->
+          <div class="flex items-center gap-2 mb-5 pb-4 border-b border-slate-100">
+            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+            <h3 class="text-sm font-bold text-slate-700">Contacto</h3>
+          </div>
+          <div class="mb-8">
+            <label class="block text-xs font-semibold text-slate-500 mb-2">Correo Institucional</label>
+            <input id="f-correo" type="email" placeholder="correo@cni.hn" class="input-field max-w-md">
+          </div>
+          <!-- Actions -->
+          <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
+            <button onclick="hideForm()" class="btn bg-white border-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300">Cancelar</button>
+            <button onclick="saveEmpleado()" class="btn bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 !px-8">Guardar Empleado</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ PANEL: BOLETA ════════════════ -->
+    <div id="p-boleta" class="panel">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-[22px] font-extrabold text-slate-800 tracking-tight">Boleta de Pago</h2>
+          <p class="text-sm text-slate-500 mt-1">Genere boletas, exporte PDF y envie por correo</p>
+        </div>
+        <button onclick="generarTodos()" class="btn bg-cni-blue hover:bg-cni-blue/90 text-white shadow-lg shadow-blue-500/25">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"/></svg>
+          Generar Todos
+        </button>
+      </div>
+
+      <!-- Selector Card -->
+      <div class="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm mb-5">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Seleccionar Empleado y Periodo</p>
+        <div class="grid grid-cols-12 gap-4 items-end">
+          <div class="col-span-5">
+            <label class="block text-xs font-semibold text-slate-500 mb-2">Empleado</label>
+            <select id="b-emp" onchange="onBoletaEmp()" class="input-field">
+              <option value="">Seleccione empleado</option>
+            </select>
+          </div>
+          <div class="col-span-2">
+            <label class="block text-xs font-semibold text-slate-500 mb-2">Desde</label>
+            <input id="b-fi" placeholder="DD/MM/AAAA" class="input-field">
+          </div>
+          <div class="col-span-2">
+            <label class="block text-xs font-semibold text-slate-500 mb-2">Hasta</label>
+            <input id="b-ff" placeholder="DD/MM/AAAA" class="input-field">
+          </div>
+          <div class="col-span-3">
+            <button onclick="previewBoleta()" class="btn bg-blue-600 hover:bg-blue-700 text-white w-full shadow-lg shadow-blue-500/25">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              Vista Previa
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div id="boleta-preview" class="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-8 mb-5 min-h-[300px]">
+        <div class="flex flex-col items-center justify-center py-16 text-slate-400">
+          <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+            <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+          </div>
+          <p class="text-sm font-medium text-slate-400">Seleccione un empleado y genere la vista previa</p>
+          <p class="text-xs text-slate-300 mt-1">La boleta aparecera aqui</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="grid grid-cols-3 gap-4" id="boleta-actions" style="display:none">
+        <button onclick="boletaPdf()" class="btn bg-cni-green hover:bg-cni-green/90 text-white w-full !h-14 !text-sm shadow-lg shadow-emerald-500/20">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+          Exportar PDF
+        </button>
+        <button onclick="boletaEmail()" class="btn bg-blue-600 hover:bg-blue-700 text-white w-full !h-14 !text-sm shadow-lg shadow-blue-500/20">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+          Enviar Correo
+        </button>
+        <button onclick="boletaBoth()" class="btn bg-cni-cyan hover:bg-cni-cyan/90 text-white w-full !h-14 !text-sm shadow-lg shadow-blue-500/20">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+          PDF + Correo
+        </button>
+      </div>
+    </div>
+
+    <!-- ════════════════ PANEL: HISTORICO ════════════════ -->
+    <div id="p-historico" class="panel">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-[22px] font-extrabold text-slate-800 tracking-tight">Historico de Pagos</h2>
+          <p class="text-sm text-slate-500 mt-1">Registro de todas las boletas generadas</p>
+        </div>
+        <button onclick="exportarAuditoria()" class="btn bg-cni-cyan hover:bg-cni-cyan/90 text-white shadow-lg shadow-blue-500/25">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+          Exportar Auditoria
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-3 gap-5 mb-6">
+        <div class="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-sm">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+            </div>
+            <div>
+              <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Registros</p>
+              <p class="text-[26px] font-extrabold text-blue-600 leading-none mt-0.5" id="ht-total">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-sm">
+          <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-cni-green/10 flex items-center justify-center">
+                <svg class="w-6 h-6 text-cni-green" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div>
+                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Monto Neto</p>
+                <p class="text-[22px] font-extrabold text-cni-green leading-none mt-0.5" id="ht-neto">L. 0.00</p>
+              </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-sm">
+          <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center">
+            <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div>
+            <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Deducciones</p>
+            <p class="text-[22px] font-extrabold text-red-500 leading-none mt-0.5" id="ht-ded">L. 0.00</p>
+          </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="bg-white rounded-2xl border border-slate-200/60 p-4 shadow-sm mb-5">
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="flex items-center gap-2 text-slate-400">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"/></svg>
+            <span class="text-xs font-bold uppercase tracking-wider">Filtros</span>
+          </div>
+          <input id="h-emp" placeholder="Nombre o codigo..." class="input-field !h-9 !text-xs !w-48">
+          <span class="text-[11px] text-slate-400 font-medium">Desde</span>
+          <input id="h-fi" placeholder="DD/MM/AAAA" class="input-field !h-9 !text-xs !w-32">
+          <span class="text-[11px] text-slate-400 font-medium">Hasta</span>
+          <input id="h-ff" placeholder="DD/MM/AAAA" class="input-field !h-9 !text-xs !w-32">
+          <button onclick="loadHistorico()" class="btn bg-blue-600 hover:bg-blue-700 text-white !h-9 !text-xs !px-4">Buscar</button>
+          <button onclick="clearHistFiltros()" class="btn bg-white border-2 border-slate-200 text-slate-500 hover:bg-slate-50 !h-9 !text-xs !px-4">Limpiar</button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-slate-50/80">
+                <th class="px-4 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Fecha</th>
+                <th class="px-4 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Codigo</th>
+                <th class="px-4 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Empleado</th>
+                <th class="px-4 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Cargo</th>
+                <th class="px-4 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Periodo</th>
+                <th class="px-4 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Salario</th>
+                <th class="px-4 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">IHSS</th>
+                <th class="px-4 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">ISR</th>
+                <th class="px-4 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Otro</th>
+                <th class="px-4 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Deducc.</th>
+                <th class="px-4 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Neto</th>
+                <th class="px-4 py-3.5 text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">Tipo</th>
+              </tr>
+            </thead>
+            <tbody id="tb-hist" class="divide-y divide-slate-100 text-[13px]"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ PANEL: CONFIG ════════════════ -->
+    <div id="p-config" class="panel">
+      <div class="mb-6">
+        <h2 class="text-[22px] font-extrabold text-slate-800 tracking-tight">Configuracion</h2>
+        <p class="text-sm text-slate-500 mt-1">Tabla ISR progresiva y servidor de correo</p>
+      </div>
+
+      <!-- ── ISR TABLE ── -->
+      <div class="bg-white rounded-2xl border border-slate-200/60 p-7 shadow-sm mb-6">
+        <div class="flex items-center justify-between mb-5">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+              <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 002.25 2.25h10.5a2.25 2.25 0 002.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0012 2.25z"/></svg>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-800">Tabla Progresiva ISR 2026</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Impuesto Sobre la Renta — Tramos mensuales</p>
+            </div>
+          </div>
+          <button onclick="addTramo()" class="btn bg-teal-600 hover:bg-teal-700 text-white !h-9 !text-xs shadow-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            Agregar Tramo
+          </button>
+        </div>
+
+        <!-- ISR Table -->
+        <div class="rounded-xl border border-slate-200/80 overflow-hidden mb-5">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-gradient-to-r from-teal-500 to-teal-600 text-white">
+                <th class="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-wider">Tasa %</th>
+                <th class="px-5 py-3 text-right text-[11px] font-bold uppercase tracking-wider">Desde (Mensual)</th>
+                <th class="px-5 py-3 text-right text-[11px] font-bold uppercase tracking-wider">Hasta (Mensual)</th>
+                <th class="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-wider">Descripcion</th>
+                <th class="px-5 py-3 text-center text-[11px] font-bold uppercase tracking-wider w-20">Accion</th>
+              </tr>
+            </thead>
+            <tbody id="tb-isr" class="divide-y divide-slate-100 text-[13px]"></tbody>
+          </table>
+        </div>
+
+        <!-- ISR Calculator Preview -->
+        <div class="flex items-center gap-4 bg-slate-50 rounded-xl p-4 mb-5">
+          <svg class="w-5 h-5 text-teal-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5z"/></svg>
+          <span class="text-xs font-semibold text-slate-500">Probar calculo:</span>
+          <input id="isr-test-sal" type="number" placeholder="Salario mensual" class="input-field !h-9 !text-xs !w-40" oninput="testISR()">
+          <span class="text-xs text-slate-400">=</span>
+          <span id="isr-test-result" class="text-sm font-bold text-teal-600">L. 0.00</span>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button onclick="saveISRTramos()" class="btn bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/25 !px-8">Guardar Tabla ISR</button>
+          <button onclick="recalcularTodos()" class="btn bg-white border-2 border-teal-200 text-teal-700 hover:bg-teal-50">Recalcular Todos los Empleados</button>
+        </div>
+      </div>
+
+      <!-- ── IHSS CONFIG ── -->
+      <div class="bg-white rounded-2xl border border-slate-200/60 p-7 shadow-sm mb-6 max-w-3xl">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cni-green to-emerald-600 flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-800">Configuración IHSS 2026</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Instituto Hondureño de Seguridad Social — Tasas del empleado</p>
+          </div>
+        </div>
+        
+        <div class="flex items-start gap-3 bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-6">
+          <svg class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+          <div class="text-xs text-emerald-700 leading-relaxed">
+            <p class="font-bold mb-1">Fórmula de cálculo IHSS:</p>
+            <p><strong>Salario Base</strong> = Mín(Salario Real, Techo de Cotización)</p>
+            <p><strong>IHSS Total Empleado</strong> = Salario Base × (Tasa EM + Tasa IVM)</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-5 mb-6">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-2">Tasa EM - Empleado (%)</label>
+            <input id="ihss-em" type="number" step="0.01" placeholder="2.5" class="input-field">
+            <p class="text-[10px] text-slate-400 mt-1">Enfermedad y Maternidad</p>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-2">Tasa IVM - Empleado (%)</label>
+            <input id="ihss-ivm" type="number" step="0.01" placeholder="2.5" class="input-field">
+            <p class="text-[10px] text-slate-400 mt-1">Invalidez, Vejez y Muerte</p>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-2">Techo de Cotización (L.)</label>
+            <input id="ihss-techo" type="number" step="0.01" placeholder="12000.00" class="input-field">
+            <p class="text-[10px] text-slate-400 mt-1">Mensual 2026</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-4 mb-6">
+          <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5z"/></svg>
+          <span class="text-xs font-semibold text-slate-500">Ejemplo:</span>
+          <input id="ihss-test-sal" type="number" placeholder="Salario mensual" class="input-field !h-9 !text-xs !w-40" oninput="testIHSS()">
+          <span class="text-xs text-slate-400">=</span>
+          <span id="ihss-test-result" class="text-sm font-bold text-emerald-600">L. 0.00</span>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button onclick="saveIHSSConfig()" class="btn bg-cni-green hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/25 !px-8">Guardar Configuración IHSS</button>
+          <button onclick="recalcularIHSSTodos()" class="btn bg-white border-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50">Recalcular IHSS de Todos los Empleados</button>
+        </div>
+      </div>
+
+      <!-- ── SMTP CONFIG ── -->
+      <div class="bg-white rounded-2xl border border-slate-200/60 p-7 shadow-sm max-w-3xl">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-800">Configuracion SMTP</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Servidor de correo para enviar boletas</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-xl p-4 mb-7">
+          <svg class="w-5 h-5 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+          <div>
+            <p class="text-sm font-bold text-blue-800">Office 365</p>
+            <p class="text-xs text-blue-600 mt-0.5">smtp.office365.com &middot; STARTTLS &middot; Puerto 587</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-5 mb-6">
+          <div class="col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-2">Host SMTP</label><input id="c-srv" placeholder="smtp.office365.com" class="input-field"></div>
+          <div><label class="block text-xs font-semibold text-slate-500 mb-2">Puerto</label><input id="c-port" type="number" placeholder="587" class="input-field"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-5 mb-6">
+          <div><label class="block text-xs font-semibold text-slate-500 mb-2">Username (cuenta con licencia)</label><input id="c-usr" placeholder="tu-usuario@cni.hn" class="input-field"></div>
+          <div><label class="block text-xs font-semibold text-slate-500 mb-2">Password</label><input id="c-pwd" type="password" placeholder="••••••••" class="input-field"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-5 mb-4">
+          <div><label class="block text-xs font-semibold text-slate-500 mb-2">Nombre del Emisor</label><input id="c-emisor" placeholder="Servicios Online" class="input-field"></div>
+          <div><label class="block text-xs font-semibold text-slate-500 mb-2">Correo Remitente (From)</label><input id="c-rem" placeholder="notificaciones@cni.hn" class="input-field"></div>
+        </div>
+        <p class="text-[11px] text-slate-400 mb-7">El Username inicia sesion. El Correo Remitente es lo que el destinatario ve.</p>
+        <div class="pt-5 border-t border-slate-100">
+          <button onclick="saveSMTP()" class="btn bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 !px-8">Guardar SMTP</button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<script>
+const F = n => `L. ${Number(n).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+let selectedEmpId=null,editingId=null,boletaEmp=null;
+document.getElementById('current-date').textContent=new Date().toLocaleDateString('es-HN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+const titles={personal:'Gestion de Personal',boleta:'Boleta de Pago',historico:'Historico de Pagos',config:'Configuracion'};
+let isrTramos=[];
+
+// ── NAV ──
+function go(key){
+  // Cambiar paneles
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('p-'+key).classList.add('active');
+  
+  // Actualizar estado del menu - remover active de todos primero
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  
+  // Agregar active solo al seleccionado
+  const activeItem = document.querySelector(`.nav-item[data-page="${key}"]`);
+  if(activeItem) {
+    activeItem.classList.add('active');
+  }
+  
+  document.getElementById('page-title').textContent=titles[key]||'';
+  if(key==='personal'){loadEmpleados();document.getElementById('personal-form').style.display='none';document.getElementById('personal-list').style.display='block';}
+  if(key==='boleta') { loadBoletaEmps(); document.getElementById('boleta-actions').style.display='none'; document.getElementById('boleta-preview').innerHTML='<div class="flex flex-col items-center justify-center py-16 text-slate-400"><div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4"><svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg></div><p class="text-sm font-medium text-slate-400">Seleccione un empleado y genere la vista previa</p><p class="text-xs text-slate-300 mt-1">La boleta aparecera aqui</p></div>'; }
+  if(key==='historico') loadHistorico();
+  if(key==='config') { loadSMTP(); loadIsrConfig(); loadIHSSConfig(); }
+}
+
+// ── PERSONAL ──
+async function loadEmpleados(){
+  const q=document.getElementById('search-emp').value;
+  const [data,s]=await Promise.all([
+    fetch('/api/empleados?q='+encodeURIComponent(q)).then(r=>r.json()),
+    fetch('/api/stats').then(r=>r.json())
+  ]);
+  document.getElementById('tb-emp').innerHTML=data.map(e=>`
+    <tr onclick="selectEmp(${e.id},this)" ondblclick="editEmp(${e.id})" class="cursor-pointer hover:bg-blue-50/50 transition-colors group">
+      <td class="px-5 py-3.5"><span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 text-[12px] font-bold text-slate-600">${e.cod_empleado}</span></td>
+      <td class="px-5 py-3.5 font-semibold text-slate-800">${e.nombre_empleado}</td>
+      <td class="px-5 py-3.5 text-slate-500">${e.cargo}</td>
+      <td class="px-5 py-3.5 text-right font-bold text-cni-green">${F(e.salario_mensual)}</td>
+      <td class="px-5 py-3.5 text-right text-slate-500">${F(e.ihss||0)}</td>
+      <td class="px-5 py-3.5 text-right font-medium text-teal-600">${F(e.isr||0)}</td>
+      <td class="px-5 py-3.5 text-right text-slate-500">${F(e.otro||0)}</td>
+      <td class="px-5 py-3.5 text-slate-400 text-xs">${e.correo_institucional||'—'}</td>
+      <td class="px-5 py-3.5 text-center">
+        <div class="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onclick="event.stopPropagation();editEmp(${e.id})" class="w-8 h-8 rounded-lg hover:bg-blue-100 flex items-center justify-center text-slate-400 hover:text-blue-600 transition cursor-pointer" title="Editar">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+          </button>
+          <button onclick="event.stopPropagation();deleteSingle(${e.id},'${e.nombre_empleado.replace(/'/g,"\\'")}')" class="w-8 h-8 rounded-lg hover:bg-red-100 flex items-center justify-center text-slate-400 hover:text-red-500 transition cursor-pointer" title="Eliminar">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`).join('');
+  document.getElementById('st-total').textContent=s.total;
+  document.getElementById('st-plan').textContent=F(s.planilla);
+  document.getElementById('st-prom').textContent=F(s.promedio);
+}
+function selectEmp(id,tr){selectedEmpId=id;document.querySelectorAll('#tb-emp tr').forEach(r=>r.classList.remove('row-selected'));tr.classList.add('row-selected')}
+async function showForm(){
+  editingId=null;document.getElementById('form-title').textContent='Nuevo Empleado';
+  ['f-cod','f-nombre','f-cargo','f-sal','f-obs','f-correo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-otro').value='0';
+  document.getElementById('f-ihss-display').textContent='L. 0.00';
+  document.getElementById('f-isr-display').textContent='L. 0.00';
+  
+  // Obtener siguiente código automático
+  try {
+    const r = await fetch('/api/next_cod');
+    const res = await r.json();
+    document.getElementById('f-cod').value = res.next_cod;
+  } catch (e) { console.error("Error obteniendo codigo:", e); }
+  
+  document.getElementById('personal-list').style.display='none';document.getElementById('personal-form').style.display='block';
+}
+function hideForm(){document.getElementById('personal-form').style.display='none';document.getElementById('personal-list').style.display='block';loadEmpleados()}
+async function editEmp(id){
+  const e=await(await fetch('/api/empleados/'+id)).json();
+  editingId=id;document.getElementById('form-title').textContent='Editar Empleado';
+  document.getElementById('f-cod').value=e.cod_empleado;document.getElementById('f-nombre').value=e.nombre_empleado;
+  document.getElementById('f-cargo').value=e.cargo;document.getElementById('f-sal').value=e.salario_mensual;
+  document.getElementById('f-ihss-display').textContent=F(e.ihss||0);
+  document.getElementById('f-isr-display').textContent=F(e.isr||0);
+  document.getElementById('f-otro').value=e.otro||0;document.getElementById('f-obs').value=e.observacion_otro||'';
+  document.getElementById('f-correo').value=e.correo_institucional||'';
+  document.getElementById('personal-list').style.display='none';document.getElementById('personal-form').style.display='block';
+}
+async function saveEmpleado(){
+  const d={
+    cod_empleado:document.getElementById('f-cod').value.trim(),
+    nombre_empleado:document.getElementById('f-nombre').value.trim(),
+    cargo:document.getElementById('f-cargo').value.trim(),
+    salario_mensual:document.getElementById('f-sal').value,
+    ihss: document.getElementById('f-ihss-display').textContent.replace('L. ','').replace(/,/g,'') || 0,
+    isr: document.getElementById('f-isr-display').textContent.replace('L. ','').replace(/,/g,'') || 0,
+    otro:document.getElementById('f-otro').value||0,
+    observacion_otro:document.getElementById('f-obs').value.trim(),
+    correo_institucional:document.getElementById('f-correo').value.trim()
+  };
+  if(!d.cod_empleado||!d.nombre_empleado||!d.cargo)return Swal.fire({icon:'warning',title:'Campos Requeridos',text:'Codigo, Nombre y Cargo son obligatorios.',confirmButtonColor:'#2563eb'});
+  if(Number(d.salario_mensual)<=0)return Swal.fire({icon:'warning',title:'Salario Invalido',text:'El salario debe ser mayor a cero.',confirmButtonColor:'#2563eb'});
+  const url=editingId?'/api/empleados/'+editingId:'/api/empleados';
+  const method=editingId?'PUT':'POST';
+  const r=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+  const res=await r.json();
+  if(res.ok){await Swal.fire({icon:'success',title:'Guardado',text:'Empleado guardado correctamente.',timer:1500,showConfirmButton:false});hideForm()}
+  else Swal.fire({icon:'error',title:'Error',text:res.error,confirmButtonColor:'#2563eb'})
+}
+async function deleteSingle(id,name){
+  const res=await Swal.fire({icon:'warning',title:'Eliminar Empleado',html:`¿Desea eliminar a <b>${name}</b>?`,showCancelButton:true,confirmButtonColor:'#dc2626',cancelButtonColor:'#64748b',confirmButtonText:'Si, eliminar',cancelButtonText:'Cancelar'});
+  if(res.isConfirmed){await fetch('/api/empleados/'+id,{method:'DELETE'});selectedEmpId=null;loadEmpleados();Swal.fire({icon:'success',title:'Eliminado',text:'Empleado eliminado correctamente.',timer:1200,showConfirmButton:false})}
+}
+
+// ── BOLETA ──
+async function loadBoletaEmps(){
+  const data=await(await fetch('/api/empleados')).json();
+  const sel=document.getElementById('b-emp');
+  sel.innerHTML='<option value="">Seleccione empleado</option>'+data.map(e=>`<option value="${e.id}">${e.cod_empleado} — ${e.nombre_empleado}</option>`).join('');
+  if(!document.getElementById('b-fi').value){
+    const now=new Date(),pm=now.getMonth()===0?12:now.getMonth(),py=now.getMonth()===0?now.getFullYear()-1:now.getFullYear();
+    document.getElementById('b-fi').value=`20/${String(pm).padStart(2,'0')}/${py}`;
+    document.getElementById('b-ff').value=`20/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+  }
+}
+async function onBoletaEmp(){const id=document.getElementById('b-emp').value;if(id)boletaEmp=await(await fetch('/api/empleados/'+id)).json()}
+function previewBoleta(){
+  const e=boletaEmp;if(!e)return Swal.fire({icon:'info',title:'Sin Seleccion',text:'Seleccione un empleado.',confirmButtonColor:'#2563eb'});
+  const fi=document.getElementById('b-fi').value,ff=document.getElementById('b-ff').value;
+  if(!fi||!ff)return Swal.fire({icon:'warning',title:'Fechas',text:'Ingrese ambas fechas.',confirmButtonColor:'#2563eb'});
+  const sal=e.salario_mensual,ihss=e.ihss||0,isr=e.isr||0,otro=e.otro||0,obs=e.observacion_otro||'';
+  const td=ihss+isr+otro,neto=sal-td;
+  let otroRow=otro>0?`<div class="flex justify-between py-2 border-b border-red-100"><span class="text-[13px] text-slate-600">${obs?'Otro ('+obs+')':'Otra Deduccion'}</span><span class="text-[13px] font-semibold text-red-500">-${F(otro)}</span></div>`:'';
+  document.getElementById('boleta-preview').innerHTML=`
+    <div class="max-w-lg mx-auto space-y-4">
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-4">Datos del Empleado</p>
+        ${[['Codigo',e.cod_empleado],['Nombre',e.nombre_empleado],['Cargo',e.cargo],['Periodo',fi+' al '+ff],['Correo',e.correo_institucional||'No registrado']].map(([l,v])=>`<div class="flex items-center justify-between py-1.5"><span class="text-xs text-slate-400 font-medium">${l}</span><span class="text-sm font-semibold text-slate-700">${v}</span></div>`).join('')}
+      </div>
+      <div class="bg-cni-green/10 border border-cni-green/20 rounded-xl p-5">
+        <p class="text-[10px] font-bold text-cni-green uppercase tracking-[0.15em] mb-3">Ingresos</p>
+        <div class="flex justify-between items-center"><span class="text-sm font-medium text-slate-700">Salario Mensual</span><span class="text-xl font-extrabold text-cni-green">${F(sal)}</span></div>
+      </div>
+      <div class="bg-red-50 border border-red-200 rounded-xl p-5">
+        <p class="text-[10px] font-bold text-red-400 uppercase tracking-[0.15em] mb-3">Deducciones</p>
+        <div class="flex justify-between py-2 border-b border-red-100"><span class="text-[13px] text-slate-600">IHSS (Seguro Social)</span><span class="text-[13px] font-semibold text-red-500">-${F(ihss)}</span></div>
+        <div class="flex justify-between py-2 border-b border-red-100"><span class="text-[13px] text-slate-600">ISR (Impuesto Sobre la Renta)</span><span class="text-[13px] font-semibold text-red-500">-${F(isr)}</span></div>
+        ${otroRow}
+        <div class="flex justify-between pt-3 mt-1"><span class="text-sm font-bold text-slate-700">Total Deducciones</span><span class="text-sm font-extrabold text-red-600">-${F(td)}</span></div>
+      </div>
+      <div class="bg-gradient-to-r from-cni-blue to-cni-cyan rounded-xl p-6 flex justify-between items-center shadow-lg shadow-blue-500/20">
+        <span class="text-white font-bold text-[15px]">SALARIO NETO</span>
+        <span class="text-white font-extrabold text-2xl">${F(neto)}</span>
+      </div>
+    </div>`;
+  document.getElementById('boleta-actions').style.display='grid';
+}
+
+async function _boletaAction(endpoint){
+  const id=document.getElementById('b-emp').value,fi=document.getElementById('b-fi').value,ff=document.getElementById('b-ff').value;
+  if(!id||!fi||!ff)return;
+  Swal.fire({title:'Procesando...',text:'Generando boleta de pago',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+  try{
+    const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:Number(id),fi,ff})});
+    const res=await r.json();Swal.close();
+    if(res.ok){let msg='<div class="text-left space-y-1">';if(res.ruta)msg+=`<p class="text-sm text-slate-600"><span class="font-semibold">PDF:</span> ${res.ruta}</p>`;if(res.correo)msg+=`<p class="text-sm text-slate-600"><span class="font-semibold">Correo:</span> ${res.correo}</p>`;msg+='</div>';Swal.fire({icon:'success',title:'Completado',html:msg,confirmButtonColor:'#2563eb'})}
+    else Swal.fire({icon:'error',title:'Error',text:res.error,confirmButtonColor:'#2563eb'})
+  }catch(err){Swal.close();Swal.fire({icon:'error',title:'Error',text:err.message,confirmButtonColor:'#2563eb'})}
+}
+function boletaPdf(){_boletaAction('/api/boleta/pdf')}
+function boletaEmail(){_boletaAction('/api/boleta/email')}
+function boletaBoth(){_boletaAction('/api/boleta/both')}
+
+// ── GENERAR TODOS ──
+async function generarTodos(){
+  const fi=document.getElementById('b-fi').value,ff=document.getElementById('b-ff').value;
+  if(!fi||!ff)return Swal.fire({icon:'warning',title:'Fechas Requeridas',text:'Ingrese las fechas Desde y Hasta antes de generar.',confirmButtonColor:'#2563eb'});
+  const {value:modo}=await Swal.fire({
+    title:'Generar Boletas para Todos',
+    html:`<p class="text-sm text-slate-500 mb-4">Se generaran boletas para <b>todos los empleados</b> del periodo <b>${fi}</b> al <b>${ff}</b>.</p><p class="text-xs text-slate-400">Seleccione el metodo de generacion:</p>`,
+    input:'select',inputOptions:{'pdf':'Solo PDF','email':'Solo Correo','both':'PDF + Correo'},
+    inputPlaceholder:'Seleccione una opcion',showCancelButton:true,confirmButtonColor:'#7c3aed',cancelButtonColor:'#64748b',
+    confirmButtonText:'Generar',cancelButtonText:'Cancelar',
+    inputValidator:v=>{if(!v)return'Seleccione una opcion'}
+  });
+  if(!modo)return;
+  Swal.fire({title:'Generando boletas...',html:'<p class="text-sm text-slate-500">Procesando todos los empleados. Esto puede tardar unos segundos.</p>',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+  try{
+    const r=await fetch('/api/boleta/batch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fi,ff,modo})});
+    const res=await r.json();Swal.close();
+    let detailHtml='<div class="text-left max-h-60 overflow-y-auto mt-3">';
+    res.detalle.forEach(d=>{
+      if(d.ok)detailHtml+=`<div class="flex items-center gap-2 py-1.5 border-b border-slate-100"><span class="text-green-500 text-sm">✓</span><span class="text-sm text-slate-700">${d.cod} — ${d.nombre}</span></div>`;
+      else detailHtml+=`<div class="flex items-start gap-2 py-1.5 border-b border-slate-100"><span class="text-red-500 text-sm">✗</span><div><span class="text-sm text-slate-700">${d.cod} — ${d.nombre}</span><p class="text-xs text-red-400">${d.error}</p></div></div>`;
+    });
+    detailHtml+='</div>';
+    Swal.fire({
+      icon:res.fallidos===0?'success':'warning',
+      title:res.fallidos===0?'Todas las boletas generadas':'Proceso completado con alertas',
+      html:`<div class="text-left"><div class="grid grid-cols-3 gap-3 mb-3"><div class="bg-slate-50 rounded-lg p-3 text-center"><p class="text-2xl font-bold text-blue-600">${res.total}</p><p class="text-[10px] text-slate-400 font-semibold uppercase">Total</p></div><div class="bg-emerald-50 rounded-lg p-3 text-center"><p class="text-2xl font-bold text-emerald-600">${res.exitosos}</p><p class="text-[10px] text-slate-400 font-semibold uppercase">Exitosos</p></div><div class="bg-red-50 rounded-lg p-3 text-center"><p class="text-2xl font-bold text-red-500">${res.fallidos}</p><p class="text-[10px] text-slate-400 font-semibold uppercase">Fallidos</p></div></div>${detailHtml}</div>`,
+      confirmButtonColor:'#2563eb',width:520
+    });
+  }catch(err){Swal.close();Swal.fire({icon:'error',title:'Error',text:err.message,confirmButtonColor:'#2563eb'})}
+}
+
+// ── HISTORICO ──
+async function loadHistorico(){
+  const emp=document.getElementById('h-emp').value,fi=document.getElementById('h-fi').value,ff=document.getElementById('h-ff').value;
+  const r=await fetch(`/api/historico?emp=${encodeURIComponent(emp)}&fi=${encodeURIComponent(fi)}&ff=${encodeURIComponent(ff)}`);
+  const data=await r.json();
+  document.getElementById('tb-hist').innerHTML=data.rows.map(r=>{
+    const tag=r.tipo.includes('+')?'both':r.tipo.toLowerCase().includes('email')?'email':'pdf';
+    const cls={pdf:'bg-cni-green/10 text-cni-green border border-cni-green/20',email:'bg-cni-blue/10 text-cni-blue border border-cni-blue/20',both:'bg-cni-cyan/10 text-cni-cyan border border-cni-cyan/20'}[tag];
+    return `<tr class="hover:bg-blue-50/30 transition-colors">
+      <td class="px-4 py-3 text-xs text-slate-500">${r.fecha_generacion||''}</td>
+      <td class="px-4 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-[11px] font-bold text-slate-600">${r.cod_empleado}</span></td>
+      <td class="px-4 py-3 font-semibold text-slate-800">${r.nombre_empleado}</td>
+      <td class="px-4 py-3 text-slate-500">${r.cargo}</td>
+      <td class="px-4 py-3 text-xs text-slate-500">${r.fecha_inicio} al ${r.fecha_fin}</td>
+      <td class="px-4 py-3 text-right text-slate-600 font-medium">${F(r.salario)}</td>
+      <td class="px-4 py-3 text-right text-slate-500">${F(r.ihss)}</td>
+      <td class="px-4 py-3 text-right text-slate-500">${F(r.isr)}</td>
+      <td class="px-4 py-3 text-right text-slate-500">${F(r.otro)}</td>
+      <td class="px-4 py-3 text-right font-semibold text-red-500">${F(r.total_deducciones)}</td>
+      <td class="px-4 py-3 text-right font-bold text-cni-green">${F(r.salario_neto)}</td>
+      <td class="px-4 py-3 text-center"><span class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold ${cls}">${r.tipo}</span></td>
+    </tr>`}).join('');
+  document.getElementById('ht-total').textContent=data.stats.total;
+  document.getElementById('ht-neto').textContent=F(data.stats.neto);
+  document.getElementById('ht-ded').textContent=F(data.stats.deducciones);
+}
+function clearHistFiltros(){['h-emp','h-fi','h-ff'].forEach(id=>document.getElementById(id).value='');loadHistorico()}
+async function exportarAuditoria(){
+  Swal.fire({title:'Generando reporte...',text:'Creando PDF de auditoria',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+  const r=await fetch('/api/historico/exportar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filtro:''})});
+  const res=await r.json();Swal.close();
+  if(res.ok)Swal.fire({icon:'success',title:'Reporte Generado',text:res.ruta,confirmButtonColor:'#2563eb'});
+  else Swal.fire({icon:'error',title:'Error',text:res.error,confirmButtonColor:'#2563eb'})
+}
+
+// ── ISR TRAMOS ──
+async function loadIsrConfig(){
+  isrTramos=await(await fetch('/api/isr/tramos')).json();
+  renderISRTable();
+}
+function renderISRTable(){
+  document.getElementById('tb-isr').innerHTML=isrTramos.map((t,i)=>{
+    const esUltimo=t.hasta_mensual>=99999999;
+    return `<tr class="hover:bg-teal-50/30 transition-colors">
+      <td class="px-5 py-3"><span class="inline-flex items-center px-3 py-1 rounded-lg ${t.tasa===0?'bg-emerald-50 text-emerald-700':'bg-teal-50 text-teal-700'} text-xs font-bold">${t.tasa===0?'Exento':t.tasa+'%'}</span></td>
+      <td class="px-5 py-3 text-right font-medium text-slate-700">${F(t.desde_mensual)}</td>
+      <td class="px-5 py-3 text-right font-medium text-slate-700">${esUltimo?'<span class="text-slate-400 italic">en adelante</span>':F(t.hasta_mensual)}</td>
+      <td class="px-5 py-3 text-slate-500">${t.descripcion||''}</td>
+      <td class="px-5 py-3 text-center">
+        <div class="flex items-center justify-center gap-1">
+          <button onclick="editTramo(${i})" class="w-7 h-7 rounded-lg hover:bg-teal-100 flex items-center justify-center text-slate-400 hover:text-teal-600 transition cursor-pointer" title="Editar">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+          </button>
+          <button onclick="deleteTramo(${i})" class="w-7 h-7 rounded-lg hover:bg-red-100 flex items-center justify-center text-slate-400 hover:text-red-500 transition cursor-pointer" title="Eliminar">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`}).join('');
+}
+async function addTramo(){
+  const{value:form}=await Swal.fire({title:'Nuevo Tramo ISR',html:`
+    <div class="text-left space-y-3">
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Tasa (%)</label><input id="swal-tasa" type="number" step="0.01" placeholder="15" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Desde Mensual (L.)</label><input id="swal-desde" type="number" step="0.01" placeholder="0.01" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Hasta Mensual (L.)</label><input id="swal-hasta" type="number" step="0.01" placeholder="22360.36" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Descripcion</label><input id="swal-desc" placeholder="Ej: Exento, 15%, 20%..." class="swal2-input !text-sm" style="margin:0;width:100%"></div>
+    </div>`,focusConfirm:false,showCancelButton:true,confirmButtonColor:'#0d9488',cancelButtonColor:'#64748b',confirmButtonText:'Agregar',cancelButtonText:'Cancelar',
+    preConfirm:()=>({tasa:parseFloat(document.getElementById('swal-tasa').value)||0,desde_mensual:parseFloat(document.getElementById('swal-desde').value)||0,hasta_mensual:parseFloat(document.getElementById('swal-hasta').value)||0,descripcion:document.getElementById('swal-desc').value})
+  });
+  if(form){isrTramos.push(form);isrTramos.sort((a,b)=>a.desde_mensual-b.desde_mensual);renderISRTable()}
+}
+async function editTramo(idx){
+  const t=isrTramos[idx];
+  const{value:form}=await Swal.fire({title:'Editar Tramo ISR',html:`
+    <div class="text-left space-y-3">
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Tasa (%)</label><input id="swal-tasa" type="number" step="0.01" value="${t.tasa}" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Desde Mensual (L.)</label><input id="swal-desde" type="number" step="0.01" value="${t.desde_mensual}" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Hasta Mensual (L.)</label><input id="swal-hasta" type="number" step="0.01" value="${t.hasta_mensual}" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Descripcion</label><input id="swal-desc" value="${t.descripcion||''}" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
+    </div>`,focusConfirm:false,showCancelButton:true,confirmButtonColor:'#0d9488',cancelButtonColor:'#64748b',confirmButtonText:'Guardar',cancelButtonText:'Cancelar',
+    preConfirm:()=>({tasa:parseFloat(document.getElementById('swal-tasa').value)||0,desde_mensual:parseFloat(document.getElementById('swal-desde').value)||0,hasta_mensual:parseFloat(document.getElementById('swal-hasta').value)||0,descripcion:document.getElementById('swal-desc').value})
+  });
+  if(form){isrTramos[idx]=form;isrTramos.sort((a,b)=>a.desde_mensual-b.desde_mensual);renderISRTable()}
+}
+function deleteTramo(idx){isrTramos.splice(idx,1);renderISRTable()}
+async function saveISRTramos(){
+  if(isrTramos.length===0)return Swal.fire({icon:'warning',title:'Sin Tramos',text:'Debe haber al menos un tramo.',confirmButtonColor:'#0d9488'});
+  Swal.fire({title:'Guardando...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+  const r=await fetch('/api/isr/tramos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tramos:isrTramos})});
+  const res=await r.json();Swal.close();
+  if(res.ok) Swal.fire({icon:'success',title:'Tabla ISR Guardada',html:'<p class="text-sm text-slate-500">Se recalculo el ISR de todos los empleados automaticamente.</p>',confirmButtonColor:'#0d9488'});
+  else Swal.fire({icon:'error',title:'Error',text:res.error,confirmButtonColor:'#0d9488'});
+}
+async function recalcularTodos(){
+  const res=await Swal.fire({icon:'question',title:'Recalcular ISR',text:'Se actualizara el ISR de todos los empleados con la tabla actual. ¿Continuar?',showCancelButton:true,confirmButtonColor:'#0d9488',cancelButtonColor:'#64748b',confirmButtonText:'Recalcular',cancelButtonText:'Cancelar'});
+  if(!res.isConfirmed)return;
+  Swal.fire({title:'Recalculando...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+  await fetch('/api/isr/recalcular',{method:'POST'});
+  Swal.close();
+  Swal.fire({icon:'success',title:'ISR Recalculado',text:'Todos los empleados fueron actualizados.',timer:1500,showConfirmButton:false});
+}
+async function testISR(){
+  const sal=parseFloat(document.getElementById('isr-test-sal').value)||0;
+  if(sal<=0){document.getElementById('isr-test-result').textContent='L. 0.00';return}
+  const r=await fetch('/api/calcular_isr?salario='+sal);
+  const d=await r.json();
+  document.getElementById('isr-test-result').textContent=F(d.isr_mensual);
+}
+
+// Calcular ISR e IHSS automaticamente en el formulario de empleado
+async function updateFormISR(){
+  const sal=parseFloat(document.getElementById('f-sal').value)||0;
+  if(sal<=0){
+    document.getElementById('f-isr-display').textContent='L. 0.00';
+    document.getElementById('f-ihss-display').textContent='L. 0.00';
+    return;
+  }
+  try {
+    // Calcular ISR
+    const r_isr=await fetch('/api/calcular_isr?salario='+sal);
+    const d_isr=await r_isr.json();
+    document.getElementById('f-isr-display').textContent=F(d_isr.isr_mensual);
+    
+    // Calcular IHSS
+    const r_ihss=await fetch('/api/ihss');
+    const config=await r_ihss.json();
+    const techo=config.techo_mensual||12000;
+    const tasa_total=(config.tasa_em||2.5)+(config.tasa_ivm||2.5);
+    const salarioBase=Math.min(sal,techo);
+    const ihss=salarioBase*tasa_total/100;
+    document.getElementById('f-ihss-display').textContent=F(ihss);
+  } catch(e) {
+    console.error('Error calculando ISR/IHSS:', e);
+    document.getElementById('f-isr-display').textContent='L. 0.00';
+    document.getElementById('f-ihss-display').textContent='L. 0.00';
+  }
+}
+
+// ── IHSS ──
+async function loadIHSSConfig(){
+  try {
+    const r=await fetch('/api/ihss');
+    const d=await r.json();
+    document.getElementById('ihss-em').value=d.tasa_em||2.5;
+    document.getElementById('ihss-ivm').value=d.tasa_ivm||2.5;
+    document.getElementById('ihss-techo').value=d.techo_mensual||12000;
+  } catch(e) {
+    console.error('Error cargando IHSS:', e);
+  }
+}
+
+async function saveIHSSConfig(){
+  const d={
+    tasa_em: parseFloat(document.getElementById('ihss-em').value)||0,
+    tasa_ivm: parseFloat(document.getElementById('ihss-ivm').value)||0,
+    techo_mensual: parseFloat(document.getElementById('ihss-techo').value)||0
+  };
+  if(d.tasa_em<=0||d.tasa_ivm<=0||d.techo_mensual<=0){
+    return Swal.fire({icon:'warning',title:'Datos incompletos',text:'Todos los campos son requeridos.',confirmButtonColor:'#1BAE64'});
+  }
+  try {
+    const r=await fetch('/api/ihss',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+    const res=await r.json();
+    if(res.ok){
+      Swal.fire({icon:'success',title:'IHSS Guardado',text:'Configuración actualizada correctamente.',timer:1500,showConfirmButton:false});
+    } else {
+      Swal.fire({icon:'error',title:'Error',text:res.error,confirmButtonColor:'#1BAE64'});
+    }
+  } catch(e) {
+    Swal.fire({icon:'error',title:'Error',text:'No se pudo guardar la configuración.',confirmButtonColor:'#1BAE64'});
+  }
+}
+
+async function testIHSS(){
+  const sal=parseFloat(document.getElementById('ihss-test-sal').value)||0;
+  if(sal<=0){document.getElementById('ihss-test-result').textContent='L. 0.00';return}
+  
+  const tasa_em=parseFloat(document.getElementById('ihss-em').value)||2.5;
+  const tasa_ivm=parseFloat(document.getElementById('ihss-ivm').value)||2.5;
+  const techo=parseFloat(document.getElementById('ihss-techo').value)||12000;
+  
+  const salarioBase=Math.min(sal,techo);
+  const ihss_total=salarioBase*(tasa_em+tasa_ivm)/100;
+  document.getElementById('ihss-test-result').textContent=F(ihss_total);
+}
+
+async function recalcularIHSSTodos(){
+  const res=await Swal.fire({
+    icon:'question',
+    title:'Recalcular IHSS',
+    text:'Se actualizará el IHSS de todos los empleados con la configuración actual. ¿Continuar?',
+    showCancelButton:true,
+    confirmButtonColor:'#1BAE64',
+    cancelButtonColor:'#64748b',
+    confirmButtonText:'Recalcular',
+    cancelButtonText:'Cancelar'
+  });
+  if(!res.isConfirmed)return;
+  
+  Swal.fire({title:'Recalculando...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+  try {
+    await fetch('/api/ihss/recalcular',{method:'POST'});
+    Swal.close();
+    Swal.fire({icon:'success',title:'IHSS Recalculado',text:'Todos los empleados fueron actualizados.',timer:1500,showConfirmButton:false});
+  } catch(e) {
+    Swal.close();
+    Swal.fire({icon:'error',title:'Error',text:'No se pudo recalcular el IHSS.',confirmButtonColor:'#1BAE64'});
+  }
+}
+
+// ── SMTP ──
+async function loadSMTP(){
+  const r=await(await fetch('/api/smtp')).json();
+  document.getElementById('c-srv').value=r.servidor||'smtp.office365.com';
+  document.getElementById('c-port').value=r.puerto||587;
+  document.getElementById('c-usr').value=r.usuario||'';document.getElementById('c-pwd').value='';
+  document.getElementById('c-emisor').value=r.emisor||'Servicios Online';
+  document.getElementById('c-rem').value=r.remitente_display||'';
+  loadIsrConfig();
+}
+async function saveSMTP(){
+  const d={servidor:document.getElementById('c-srv').value,puerto:document.getElementById('c-port').value,usuario:document.getElementById('c-usr').value,contrasena:document.getElementById('c-pwd').value,emisor:document.getElementById('c-emisor').value,remitente_display:document.getElementById('c-rem').value};
+  if(!d.contrasena)return Swal.fire({icon:'warning',title:'Password',text:'Ingrese la contrasena para guardar.',confirmButtonColor:'#2563eb'});
+  const r=await fetch('/api/smtp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+  const res=await r.json();
+  if(res.ok)Swal.fire({icon:'success',title:'Guardado',text:'Configuracion SMTP guardada correctamente.',timer:1500,showConfirmButton:false})
+}
+
+// ── INIT ──
+go('personal');
+</script>
+</body>
+</html>
