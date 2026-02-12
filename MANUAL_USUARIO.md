@@ -666,13 +666,21 @@ Para generar un reporte completo:
 
 ## 📞 Soporte y Ayuda
 
-### Contacto
+### Contacto del Desarrollador
 
-Para soporte técnico o dudas:
+Para dudas técnicas sobre el sistema:
 
-- **Desarrollador**: Ing. Luis Martínez
+- **Nombre**: Ing. Luis Martínez
 - **Rol**: Software Developer
 - **Email**: luismartinez.94mc@gmail.com
+
+### Contacto CNI (Soporte Interno)
+
+Para soporte operativo dentro del CNI:
+
+- **Departamento**: Oficial de TI
+- **Email**: amartinez@cni.hn
+- **Organización**: Consejo Nacional de Inversiones
 
 ### Información a proporcionar
 
@@ -682,6 +690,12 @@ Al reportar un problema, incluir:
 3. Descripción del problema
 4. Pasos para reproducir
 5. Capturas de pantalla (si aplica)
+
+### Canales de Soporte
+
+- **Problemas técnicos/bugs**: Contactar a Ing. Luis Martínez (luismartinez.94mc@gmail.com)
+- **Configuración/uso diario**: Contactar a Oficial de TI CNI (amartinez@cni.hn)
+- **Urgencias**: Contactar a ambos
 
 ---
 

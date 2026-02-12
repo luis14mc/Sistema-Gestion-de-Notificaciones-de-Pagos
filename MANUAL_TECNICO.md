@@ -667,10 +667,17 @@ if "nueva_columna" not in cols:
 
 ## 📞 Contacto Técnico
 
-Para dudas técnicas o reportar bugs:
-- **Desarrollador**: Ing. Luis Martínez
+### Desarrollador del Sistema
+Para dudas técnicas, bugs o desarrollo:
+- **Nombre**: Ing. Luis Martínez
 - **Rol**: Software Developer
 - **Email**: luismartinez.94mc@gmail.com
+
+### Soporte CNI (Interno)
+Para soporte operativo y configuración:
+- **Departamento**: Oficial de TI
+- **Email**: amartinez@cni.hn
+- **Organización**: Consejo Nacional de Inversiones
 
 ---
 

@@ -119,10 +119,14 @@ El ejecutable se generará en la carpeta `dist/`.
 
 ## 📞 Soporte
 
-Para consultas técnicas o soporte:
-- **Desarrollador**: Ing. Luis Martínez
+### Desarrollador
+- **Nombre**: Ing. Luis Martínez
 - **Rol**: Software Developer
 - **Email**: luismartinez.94mc@gmail.com
+
+### Contacto CNI (Soporte Interno)
+- **Departamento**: Oficial de TI
+- **Email**: amartinez@cni.hn
 
 ---
 

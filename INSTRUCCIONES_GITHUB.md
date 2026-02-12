@@ -210,11 +210,18 @@ Tu repositorio local ya tiene:
 
 ---
 
-## 📧 Contacto
+## 📧 Contactos
 
-**Desarrollador**: Ing. Luis Martínez  
+### Desarrollador
+**Nombre**: Ing. Luis Martínez  
+**Rol**: Software Developer  
 **Email**: luismartinez.94mc@gmail.com  
 **GitHub**: (agrega tu usuario aquí después de crear cuenta)
+
+### Soporte CNI
+**Departamento**: Oficial de TI  
+**Email**: amartinez@cni.hn  
+**Organización**: Consejo Nacional de Inversiones
 
 ---
 
