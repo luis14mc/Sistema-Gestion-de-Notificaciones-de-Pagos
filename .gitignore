@@ -26,7 +26,9 @@ wheels/
 
 # PyInstaller
 *.manifest
-*.spec
+# Mantener los archivos de build pero ignorar directorios de compilación
+build/
+dist/
 
 # Base de datos (opcional - descomentar si no quieres versionar la BD)
 # rrhh_cni.db

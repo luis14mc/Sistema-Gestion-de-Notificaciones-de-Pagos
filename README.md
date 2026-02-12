@@ -31,17 +31,29 @@ Sistema integral para la gestión de recursos humanos, nómina y generación de 
 
 ## 🚀 Instalación
 
-### Requisitos Previos
+### Opción 1: Ejecutable Pre-compilado (Recomendado para Usuarios)
+
+**Descarga el ejecutable para tu sistema operativo:**
+
+- **Windows:** `SistemaPagosCNI_v2.0.0_Windows.zip` (~150 MB)
+- **Linux:** `SistemaPagosCNI_v2.0.0_Linux.tar.gz` (~23 MB)
+- **macOS:** `SistemaPagosCNI_v2.0.0_macOS.zip` (~130 MB)
+
+**Instrucciones detalladas:** Ver [`INSTALACION.md`](INSTALACION.md)
+
+### Opción 2: Instalación desde Código Fuente (Para Desarrolladores)
+
+#### Requisitos Previos
 
 - Python 3.8 o superior
 - pip (gestor de paquetes Python)
 - Sistema operativo: Windows, Linux o macOS
 
-### Instalación Rápida
+#### Instalación Rápida
 
 1. **Clonar el repositorio**:
 ```bash
-git clone <URL_DEL_REPOSITORIO>
+git clone https://github.com/luis14mc/Sistema-Gestion-de-Notificaciones-de-Pagos.git
 cd app_rrhh_cni
 ```
 
@@ -65,21 +77,23 @@ python app.py
 
 ---
 
-## 📦 Empaquetar como Ejecutable
+## 📦 Compilar Ejecutable
 
-Para crear un ejecutable independiente:
+Para desarrolladores que desean compilar el ejecutable:
+
+**Ver instrucciones completas:** [`INSTRUCCIONES_BUILD.md`](INSTRUCCIONES_BUILD.md)
+
+**Compilación rápida:**
 
 ```bash
-pyinstaller --name="Sistema_Pagos_CNI" \
-            --windowed \
-            --onefile \
-            --icon=static/logo_cni.png \
-            --add-data="templates:templates" \
-            --add-data="static:static" \
-            app.py
+# Linux/Mac
+./build.sh
+
+# Windows
+build.bat
 ```
 
-El ejecutable se generará en la carpeta `dist/`.
+El ejecutable se generará en `dist/SistemaPagosCNI/`.
 
 ---
 
@@ -95,8 +109,11 @@ El ejecutable se generará en la carpeta `dist/`.
 
 ## 📚 Documentación
 
+- **[Instalación](INSTALACION.md)**: Guía completa de instalación para usuarios finales
 - **[Manual de Usuario](MANUAL_USUARIO.md)**: Guía detallada paso a paso
 - **[Manual Técnico](MANUAL_TECNICO.md)**: Arquitectura, APIs y desarrollo
+- **[Compilación](INSTRUCCIONES_BUILD.md)**: Crear ejecutables desde código fuente
+- **[GitHub](INSTRUCCIONES_PUSH_GITHUB.md)**: Instrucciones para push al repositorio
 
 ---
 
