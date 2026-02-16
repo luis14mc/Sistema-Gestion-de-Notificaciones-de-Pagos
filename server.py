@@ -579,100 +579,133 @@ def _enviar_email(smtp_cfg, emp, fi, ff, ruta_pdf):
     otro_row=""
     if otro>0:
         lbl=f"Otro ({obs})" if obs else "Otra Deduccion"
-        otro_row=f'<tr style="background:#f8fafb"><td style="padding:10px 16px;border-bottom:1px solid #e2e8f0;color:#475569">{lbl}</td><td style="padding:10px 16px;text-align:right;color:#dc2626;font-weight:600;border-bottom:1px solid #e2e8f0">-{fmt(otro)}</td></tr>'
+        otro_row=f'<tr class="row-light" style="background-color:#ffffff"><td style="padding:11px 16px;padding-left:28px;border-bottom:1px solid #e2e8f0;color:#334155">{lbl}</td><td style="padding:11px 16px;text-align:right;color:#dc2626;font-weight:600;border-bottom:1px solid #e2e8f0">-{fmt(otro)}</td></tr>'
     
-    # HTML moderno con colores institucionales CNI
+    # HTML compatible con modo claro y modo oscuro
     html=f'''<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#f1f5f9">
-<div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.07)">
-  <!-- Header CNI -->
-  <div style="background:linear-gradient(135deg,#233981 0%,#1a2a63 100%);padding:32px 24px;text-align:center;position:relative">
-    <div style="display:inline-block;background:#ffffff;width:56px;height:56px;border-radius:12px;margin-bottom:12px;display:flex;align-items:center;justify-content:center">
-      <div style="width:48px;height:48px;background:#233981;border-radius:10px"></div>
-    </div>
-    <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;letter-spacing:-0.5px">Boleta de Pago</h1>
-    <p style="margin:8px 0 0;color:#2AAAD6;font-size:13px;font-weight:600;letter-spacing:0.5px">CONSEJO NACIONAL DE INVERSIONES</p>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <style>
+    :root {{ color-scheme: light dark; }}
+    @media (prefers-color-scheme: dark) {{
+      .email-wrapper {{ background-color: #1a1a2e !important; }}
+      .email-container {{ background-color: #1e293b !important; border-color: #334155 !important; }}
+      .saludo-box {{ background-color: #233981 !important; border-color: #2AAAD6 !important; }}
+      .saludo-box p {{ color: #e2e8f0 !important; }}
+      .saludo-box strong {{ color: #60a5fa !important; }}
+      .deduccion-header {{ background-color: #1e293b !important; }}
+      .deduccion-header strong {{ color: #94a3b8 !important; }}
+      .row-light {{ background-color: #1e293b !important; }}
+      .row-alt {{ background-color: #162032 !important; }}
+      .row-light td, .row-alt td {{ color: #e2e8f0 !important; border-color: #334155 !important; }}
+      .total-deducc {{ background-color: #2a1215 !important; }}
+      .total-deducc td {{ border-color: #7f1d1d !important; }}
+      .nota-box {{ background-color: #162032 !important; border-color: #334155 !important; }}
+      .nota-box p {{ color: #94a3b8 !important; }}
+      .email-footer {{ background-color: #0f172a !important; border-color: #334155 !important; }}
+      .email-footer p {{ color: #64748b !important; }}
+    }}
+  </style>
+</head>
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif">
+<div class="email-wrapper" style="background-color:#eef2f7;padding:24px 16px">
+<div class="email-container" style="max-width:600px;margin:0 auto;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0">
+
+  <!-- Header CNI (siempre oscuro, se ve bien en ambos modos) -->
+  <div style="background-color:#233981;padding:32px 24px;text-align:center">
+    <table style="margin:0 auto"><tr><td style="background-color:#ffffff;width:52px;height:52px;border-radius:12px;text-align:center;vertical-align:middle">
+      <span style="font-size:24px;line-height:52px">&#127974;</span>
+    </td></tr></table>
+    <h1 style="margin:12px 0 0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px">Boleta de Pago</h1>
+    <p style="margin:8px 0 0;color:#5bb8d4;font-size:13px;font-weight:600;letter-spacing:0.5px">CONSEJO NACIONAL DE INVERSIONES</p>
   </div>
-  
+
   <!-- Body -->
-  <div style="padding:32px 24px">
-    <div style="background:#f8fafc;border-left:4px solid #2AAAD6;padding:16px 20px;border-radius:8px;margin-bottom:24px">
-      <p style="margin:0;font-size:15px;color:#475569">Estimado/a <strong style="color:#233981">{emp["nombre_empleado"]}</strong>,</p>
-      <p style="margin:8px 0 0;font-size:13px;color:#64748b">Boleta correspondiente al periodo del <strong>{fi}</strong> al <strong>{ff}</strong></p>
+  <div style="padding:28px 24px">
+
+    <!-- Saludo -->
+    <div class="saludo-box" style="background-color:#eef4ff;border-left:4px solid #2AAAD6;padding:16px 20px;border-radius:0 8px 8px 0;margin-bottom:24px">
+      <p style="margin:0;font-size:15px;color:#334155">Estimado/a <strong style="color:#233981">{emp["nombre_empleado"]}</strong>,</p>
+      <p style="margin:8px 0 0;font-size:13px;color:#334155">Boleta correspondiente al periodo del <strong style="color:#233981">{fi}</strong> al <strong style="color:#233981">{ff}</strong></p>
     </div>
-    
+
     <!-- Tabla de conceptos -->
-    <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:14px;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0">
+    <table style="width:100%;border-collapse:collapse;font-size:14px;border-radius:12px;overflow:hidden">
       <thead>
-        <tr style="background:linear-gradient(135deg,#233981 0%,#1a2a63 100%);color:#ffffff">
-          <th style="padding:14px 16px;text-align:left;font-weight:600;font-size:12px;letter-spacing:0.5px;text-transform:uppercase">Concepto</th>
-          <th style="padding:14px 16px;text-align:right;font-weight:600;font-size:12px;letter-spacing:0.5px;text-transform:uppercase">Monto</th>
+        <tr style="background-color:#233981">
+          <th style="padding:14px 16px;text-align:left;font-weight:600;font-size:12px;letter-spacing:0.5px;text-transform:uppercase;color:#ffffff;border:none">Concepto</th>
+          <th style="padding:14px 16px;text-align:right;font-weight:600;font-size:12px;letter-spacing:0.5px;text-transform:uppercase;color:#ffffff;border:none">Monto</th>
         </tr>
       </thead>
       <tbody>
         <!-- Salario -->
-        <tr style="background:linear-gradient(to right,#f0fdf9,#f0fdf4)">
-          <td style="padding:14px 16px;border-bottom:1px solid #e2e8f0">
-            <strong style="color:#1BAE64;font-size:15px">💰 Salario Mensual</strong>
+        <tr style="background-color:#0d6b3e">
+          <td style="padding:14px 16px;border:none">
+            <strong style="color:#ffffff;font-size:15px">Salario Mensual</strong>
           </td>
-          <td style="padding:14px 16px;text-align:right;border-bottom:1px solid #e2e8f0">
-            <strong style="color:#1BAE64;font-size:16px">{fmt(sal)}</strong>
-          </td>
-        </tr>
-        
-        <!-- Deducciones -->
-        <tr style="background:#ffffff">
-          <td colspan="2" style="padding:12px 16px;background:#f8fafb;border-bottom:1px solid #e2e8f0">
-            <strong style="color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.5px">⚡ Deducciones</strong>
+          <td style="padding:14px 16px;text-align:right;border:none">
+            <strong style="color:#ffffff;font-size:16px">{fmt(sal)}</strong>
           </td>
         </tr>
-        <tr style="background:#ffffff">
-          <td style="padding:10px 16px;padding-left:32px;border-bottom:1px solid #e2e8f0;color:#475569">IHSS</td>
-          <td style="padding:10px 16px;text-align:right;color:#dc2626;font-weight:600;border-bottom:1px solid #e2e8f0">-{fmt(ihss)}</td>
+
+        <!-- Separador Deducciones -->
+        <tr class="deduccion-header" style="background-color:#f1f5f9">
+          <td colspan="2" style="padding:10px 16px;border-bottom:1px solid #e2e8f0;border-top:none">
+            <strong style="color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Deducciones</strong>
+          </td>
         </tr>
-        <tr style="background:#f8fafb">
-          <td style="padding:10px 16px;padding-left:32px;border-bottom:1px solid #e2e8f0;color:#475569">ISR</td>
-          <td style="padding:10px 16px;text-align:right;color:#dc2626;font-weight:600;border-bottom:1px solid #e2e8f0">-{fmt(isr)}</td>
+        <tr class="row-light" style="background-color:#ffffff">
+          <td style="padding:11px 16px;padding-left:28px;border-bottom:1px solid #e2e8f0;color:#334155">IHSS (Seguro Social)</td>
+          <td style="padding:11px 16px;text-align:right;color:#dc2626;font-weight:600;border-bottom:1px solid #e2e8f0">-{fmt(ihss)}</td>
+        </tr>
+        <tr class="row-alt" style="background-color:#f8fafc">
+          <td style="padding:11px 16px;padding-left:28px;border-bottom:1px solid #e2e8f0;color:#334155">ISR (Impuesto Sobre la Renta)</td>
+          <td style="padding:11px 16px;text-align:right;color:#dc2626;font-weight:600;border-bottom:1px solid #e2e8f0">-{fmt(isr)}</td>
         </tr>
         {otro_row}
-        
+
         <!-- Total Deducciones -->
-        <tr style="background:#fef2f2">
-          <td style="padding:12px 16px;border-bottom:2px solid #e2e8f0">
+        <tr class="total-deducc" style="background-color:#fef2f2">
+          <td style="padding:12px 16px;border-bottom:2px solid #fca5a5">
             <strong style="color:#dc2626">Total Deducciones</strong>
           </td>
-          <td style="padding:12px 16px;text-align:right;border-bottom:2px solid #e2e8f0">
+          <td style="padding:12px 16px;text-align:right;border-bottom:2px solid #fca5a5">
             <strong style="color:#dc2626;font-size:15px">-{fmt(td)}</strong>
           </td>
         </tr>
-        
+
         <!-- Salario Neto -->
-        <tr style="background:linear-gradient(135deg,#2AAAD6 0%,#0891b2 100%)">
-          <td style="padding:18px 16px">
-            <strong style="color:#ffffff;font-size:16px;letter-spacing:0.5px">💵 SALARIO NETO</strong>
+        <tr style="background-color:#2AAAD6">
+          <td style="padding:18px 16px;border:none">
+            <strong style="color:#ffffff;font-size:16px;letter-spacing:0.3px">SALARIO NETO A RECIBIR</strong>
           </td>
-          <td style="padding:18px 16px;text-align:right">
+          <td style="padding:18px 16px;text-align:right;border:none">
             <strong style="color:#ffffff;font-size:20px;letter-spacing:-0.5px">{fmt(neto)}</strong>
           </td>
         </tr>
       </tbody>
     </table>
-    
-    <!-- Footer note -->
-    <div style="margin-top:24px;padding:16px;background:#f8fafc;border-radius:8px;border:1px dashed #cbd5e1">
-      <p style="margin:0;font-size:12px;color:#64748b;text-align:center">
-        📎 Esta boleta ha sido generada automáticamente por el <strong>Sistema de Pagos CNI</strong>
+
+    <!-- Nota -->
+    <div class="nota-box" style="margin-top:24px;padding:14px 16px;background-color:#f1f5f9;border-radius:8px;border:1px solid #cbd5e1">
+      <p style="margin:0;font-size:12px;color:#475569;text-align:center">
+        Esta boleta ha sido generada automaticamente por el <strong>Sistema de Pagos CNI</strong>.<br>
+        Si tiene alguna consulta, contacte a Recursos Humanos.
       </p>
     </div>
   </div>
-  
+
   <!-- Footer -->
-  <div style="background:#f8fafc;padding:20px 24px;text-align:center;border-top:1px solid #e2e8f0">
-    <p style="margin:0;font-size:11px;color:#94a3b8">(c) 2026 CNI Honduras - Sistema de Recursos Humanos</p>
-    <p style="margin:4px 0 0;font-size:10px;color:#cbd5e1">Consejo Nacional de Inversiones</p>
+  <div class="email-footer" style="background-color:#f1f5f9;padding:18px 24px;text-align:center;border-top:1px solid #e2e8f0">
+    <p style="margin:0;font-size:11px;color:#64748b;font-weight:500">(c) 2026 Consejo Nacional de Inversiones - Honduras</p>
+    <p style="margin:4px 0 0;font-size:10px;color:#64748b">Sistema de Recursos Humanos v2.0.0</p>
   </div>
+
+</div>
 </div>
 </body>
 </html>'''
