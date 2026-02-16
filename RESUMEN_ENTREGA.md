@@ -64,15 +64,18 @@
   - [x] `app_rrhh_cni.spec` configurado con PyInstaller
 
 - [x] **Ejecutable**
-  - [x] Compilado exitosamente para Linux
-  - [x] Tamaño: ~52 MB (descomprimido), ~23 MB (comprimido)
+  - [x] Scripts de compilación listos (build.sh, build.bat)
+  - [x] Spec file de PyInstaller configurado
+  - [x] Compilado de prueba para Linux exitoso (en WSL)
   - [x] Incluye todas las dependencias
   - [x] No requiere Python instalado
+  - [ ] ⚠️ **PENDIENTE: Compilar para Windows** (ver COMPILAR_WINDOWS.md)
 
 - [x] **Paquete de Distribución**
-  - [x] `SistemaPagosCNI_v2.0.0_Linux.tar.gz` creado
+  - [x] `SistemaPagosCNI_v2.0.0_Linux.tar.gz` creado (demo/prueba)
   - [x] Estructura de carpetas correcta
   - [x] Templates, static e img incluidos
+  - [ ] ⚠️ **PENDIENTE: Crear paquete Windows** (requiere compilar en Windows nativo)
 
 ### 📚 Documentación
 
@@ -268,29 +271,25 @@
 
 ## 🚀 Próximos Pasos para Producción
 
-### 1. Compilar para Windows (Opcional)
+### 1. ⚠️ IMPORTANTE: Compilar para Windows (REQUERIDO)
 
-Si necesitas una versión Windows:
+El ejecutable actual es para Linux (compilado en WSL). Para producción en Windows:
 
-```bash
-# En una máquina Windows o usando Wine
-build.bat
-```
+**Ver guía completa:** `COMPILAR_WINDOWS.md`
 
-Esto generará `SistemaPagosCNI.exe`
+**Pasos rápidos:**
+1. Abre PowerShell en Windows (no WSL)
+2. Navega a: `\\wsl$\Ubuntu\home\luis\app_rrhh_cni`
+3. Ejecuta:
+   ```cmd
+   python -m venv venv_windows
+   venv_windows\Scripts\activate
+   pip install -r requirements.txt
+   build.bat
+   ```
+4. El ejecutable estará en `dist\SistemaPagosCNI\SistemaPagosCNI.exe`
 
-### 2. Compilar para macOS (Opcional)
-
-Si necesitas una versión macOS:
-
-```bash
-# En una Mac
-./build.sh
-```
-
-Esto generará el ejecutable para macOS.
-
-### 3. Subir al Repositorio GitHub
+### 2. Subir al Repositorio GitHub
 
 ```bash
 cd /home/luis/app_rrhh_cni
@@ -309,14 +308,12 @@ git push -u origin main
 
 Ver detalles en: `INSTRUCCIONES_PUSH_GITHUB.md`
 
-### 4. Crear Release en GitHub
+### 3. Crear Release en GitHub
 
-Una vez subido el código:
+Una vez subido el código y compilado para Windows:
 
 1. Sube los archivos compilados como Assets:
-   - `SistemaPagosCNI_v2.0.0_Linux.tar.gz`
-   - `SistemaPagosCNI_v2.0.0_Windows.zip` (si compilaste)
-   - `SistemaPagosCNI_v2.0.0_macOS.zip` (si compilaste)
+   - `SistemaPagosCNI_v2.0.0_Windows.zip` (⚠️ PRINCIPAL - compilar primero)
 
 2. Crea un tag y release:
    ```bash
@@ -330,12 +327,12 @@ Una vez subido el código:
    - Title: "Sistema de Pagos CNI v2.0.0"
    - Description: Copiar del historial en README.md
 
-### 5. Distribución a Usuarios
+### 4. Distribución a Usuarios
 
 **Enviar a los usuarios finales:**
-1. El archivo comprimido apropiado para su sistema
-2. El archivo `INSTALACION.md`
-3. El archivo `MANUAL_USUARIO.md`
+1. `SistemaPagosCNI_v2.0.0_Windows.zip` (ejecutable compilado)
+2. `INSTALACION.md` (guía de instalación)
+3. `MANUAL_USUARIO.md` (manual de uso)
 
 **O mejor:** Envía el enlace del Release en GitHub donde pueden descargar todo.
 
