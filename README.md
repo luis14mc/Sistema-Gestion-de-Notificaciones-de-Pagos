@@ -3,7 +3,7 @@
 **Sistema de Gestión de Recursos Humanos y Nómina**  
 Consejo Nacional de Inversiones - Honduras
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue)
+![Version](https://img.shields.io/badge/version-2.1.0-blue)
 ![Release](https://img.shields.io/badge/release-Feb_2026-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.8+-green)
 ![Flask](https://img.shields.io/badge/flask-3.0-red)
@@ -35,7 +35,7 @@ Sistema integral para la gestión de recursos humanos, nómina y generación de 
 
 **Descarga el ejecutable para Windows:**
 
-- **Windows:** `SistemaPagosCNI_v2.0.0_Windows.zip` (~150-200 MB)
+- **Windows:** `SistemaPagosCNI_v2.1.0_Windows.zip` (~150-200 MB)
   - Ver guía de compilación: [`COMPILAR_WINDOWS.md`](COMPILAR_WINDOWS.md)
 
 **Instrucciones de instalación:** Ver [`INSTALACION.md`](INSTALACION.md)
@@ -164,7 +164,15 @@ Software de uso interno. Todos los derechos reservados.
 
 ## 🔄 Historial de Versiones
 
-### v2.0.0 - Febrero 11, 2026 (Actual)
+### v2.1.0 - Febrero 16, 2026 (Actual)
+- Selector de mes en Boleta de Pago (periodo del 20 al 20 automatico)
+- Historico de Pagos rediseñado: tabla simplificada, paginacion, modal de detalle
+- PDFs con logo CNI y colores institucionales (boleta y auditoria)
+- Email corporativo limpio, fondo blanco, compatible modo oscuro
+- Validacion de fechas en formularios
+- Reporte de auditoria con branding CNI
+
+### v2.0.0 - Febrero 11, 2026
 **Estado**: ✅ Producción
 
 **Nuevas Características**:

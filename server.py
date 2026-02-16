@@ -5,7 +5,7 @@ Consejo Nacional de Inversiones - Honduras
 
 Desarrollado por: Ing. Luis Martínez
 Software Developer | luismartinez.94mc@gmail.com
-Versión 2.0.0 - 11 de Febrero 2026
+Versión 2.1.0 - 16 de Febrero 2026
 Estado: Producción
 """
 import os, sqlite3, smtplib, json
@@ -522,7 +522,7 @@ class BoletaPDF(FPDF):
         self.cell(0, 4, f"Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}  |  Pagina {self.page_no()}", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.set_font("Helvetica", "", 6)
         self.set_text_color(160, 160, 160)
-        self.cell(0, 4, "Sistema de Pagos CNI v2.0.0 - Consejo Nacional de Inversiones", align="C")
+        self.cell(0, 4, "Sistema de Pagos CNI v2.1.0 - Consejo Nacional de Inversiones", align="C")
 
     def section(self, text, is_income=False, is_deduction=False):
         if is_income:
@@ -675,7 +675,7 @@ def _generar_auditoria(rows, filtro=""):
     pdf.ln(4)
     pdf.set_font("Helvetica", "", 7)
     pdf.set_text_color(120, 120, 120)
-    pdf.cell(0, 5, f"Total registros: {len(rows)}  |  Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}  |  Sistema de Pagos CNI v2.0.0", align="C")
+    pdf.cell(0, 5, f"Total registros: {len(rows)}  |  Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}  |  Sistema de Pagos CNI v2.1.0", align="C")
 
     pdf.output(ruta)
     return ruta

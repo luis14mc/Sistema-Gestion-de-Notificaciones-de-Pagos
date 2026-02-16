@@ -2,7 +2,7 @@
 
 **Consejo Nacional de Inversiones - Honduras**  
 Guía Completa para Usuarios  
-Versión 2.0 - Febrero 2026
+Versión 2.1.0 - Febrero 2026
 
 ---
 
@@ -341,26 +341,27 @@ Para probar que funciona:
 2. Buscar y seleccionar el empleado
 3. La información del empleado se cargará automáticamente
 
-#### Paso 2: Establecer Período
+#### Paso 2: Seleccionar Mes de Pago
 
-1. **Desde**: Fecha de inicio del período (DD/MM/AAAA)
+1. En el campo **"Mes de Pago"**, seleccionar el mes correspondiente
+2. El sistema calcula automáticamente el período de pago:
+   - **Desde:** Día 20 del mes anterior
+   - **Hasta:** Día 20 del mes seleccionado
    ```
-   Ejemplo: 01/02/2026
+   Ejemplo: Seleccionar "Febrero 2026"
+   Período calculado: 20/01/2026 al 20/02/2026
    ```
-2. **Hasta**: Fecha de fin del período (DD/MM/AAAA)
-   ```
-   Ejemplo: 28/02/2026
-   ```
+3. El período se muestra en una barra informativa debajo del selector
 
 #### Paso 3: Generar Vista Previa
 
-1. Clic en **"👁 Vista Previa"**
-2. Aparecerá la boleta simulada a la derecha:
-   - Información del empleado
+1. Clic en **"Vista Previa"**
+2. Aparecerá la boleta simulada debajo:
+   - Información del empleado (código, nombre, cargo, correo, período)
    - Salario mensual (en verde)
    - Deducciones (IHSS, ISR, Otro)
    - Total de deducciones (en rojo)
-   - **Salario Neto** (destacado en grande)
+   - **Salario Neto** (destacado en barra azul CNI)
 
 3. Revisar que todo esté correcto
 
@@ -406,9 +407,8 @@ Para generar boletas de **todos los empleados** a la vez:
 
 #### Paso 2: Configurar Generación
 
-1. **Fecha Desde**: Inicio del período (ej. 01/02/2026)
-2. **Fecha Hasta**: Fin del período (ej. 28/02/2026)
-3. **Modo**: Seleccionar
+1. **Mes de Pago**: Seleccionar el mes (el período del 20 al 20 se calcula automáticamente)
+2. **Modo**: Seleccionar
    - Solo PDF
    - Solo Email
    - PDF + Email
@@ -451,62 +451,75 @@ Total: 47
 
 ### Estadísticas Generales
 
-En la parte superior verás 3 tarjetas:
+En la parte superior verás 3 tarjetas resumen:
 
-1. **Total Empleados**: Cantidad de empleados activos
-2. **Total Boletas**: Boletas generadas en el sistema
-3. **Monto Total**: Suma de todos los salarios netos pagados
+1. **Registros**: Cantidad total de boletas generadas
+2. **Monto Neto**: Suma de todos los salarios netos pagados
+3. **Deducciones**: Suma total de deducciones aplicadas
 
 ### Filtrar Registros
 
-Puedes filtrar el histórico:
+Puedes filtrar el histórico por:
 
-1. **Por Empleado**: Buscar por nombre o código
-2. **Por Fecha Desde**: Seleccionar fecha inicio
-3. **Por Fecha Hasta**: Seleccionar fecha fin
-4. Clic en **"Filtrar"** o presionar Enter
+1. **Empleado**: Buscar por nombre o código en el campo de texto
+2. **Fecha Desde**: Seleccionar fecha inicio con el calendario
+3. **Fecha Hasta**: Seleccionar fecha fin con el calendario
+4. Clic en **"Buscar"** para aplicar filtros
 
-**Limpiar filtros**: Clic en "🗑️ Limpiar" o dejar campos vacíos
+**Limpiar filtros**: Clic en **"Limpiar"** para restablecer
+
+**Nota**: La fecha "Hasta" no puede ser menor que "Desde". El sistema valida automáticamente.
 
 ### Tabla de Registros
 
-La tabla muestra:
-- **Fecha**: Cuándo se generó
-- **Empleado**: Código y nombre
+La tabla muestra de forma simplificada:
+- **Fecha**: Cuándo se generó la boleta
+- **Código**: Código del empleado (CNI###)
+- **Empleado**: Nombre completo
 - **Cargo**: Puesto del empleado
-- **Período**: Fechas del pago
-- **Salario**: Salario mensual
-- **IHSS**: Deducción IHSS
-- **ISR**: Deducción ISR
-- **Otro**: Otra deducción
-- **Deducciones**: Total descontado
-- **Neto**: Salario final
-- **Tipo**: PDF, Email o Ambos
+- **Tipo**: PDF, Email o PDF+Email
+- **Acciones**: Botón **"Ver"** para abrir el detalle
+
+Los registros se ordenan automáticamente de **más reciente a más antiguo**.
+
+### Ver Detalle de Boleta
+
+Al hacer clic en el botón **"Ver"** de cualquier registro:
+
+1. Se abre una ventana modal con el detalle completo:
+   - **Datos del empleado**: Código, nombre, cargo, fecha, tipo, período
+   - **Desglose financiero**:
+     - Salario Mensual (en verde)
+     - IHSS, ISR y Otro (en rojo)
+     - Total Deducciones
+     - **Salario Neto** (destacado en azul CNI)
+   - Ruta del PDF generado (si existe)
+2. Para cerrar: clic en la **X** o clic fuera de la ventana
+
+### Paginación
+
+La tabla muestra 10 registros por página:
+
+- **Navegación**: Botones Primera, Anterior, Siguiente, Última
+- **Indicador**: "Mostrando 1-10 de 45" y "Página 1 / 5"
+- Los botones se deshabilitan cuando no aplican
 
 ### Exportar Reporte de Auditoría
 
-Para generar un reporte completo:
+Para generar un reporte PDF completo:
 
-1. Aplicar filtros si deseas (opcional)
-2. Clic en **"Exportar Reporte"**
-3. El sistema generará un PDF con:
-   - Tabla completa de registros
-   - Totales y subtotales
-   - Fecha de generación
-   - Logo institucional
+1. Clic en **"Exportar Auditoría"** (botón superior derecho)
+2. El sistema generará un PDF profesional con:
+   - Logo CNI y colores institucionales
+   - Tabla completa de todos los registros
+   - Total de registros y fecha de generación
 
-4. El archivo se guarda en:
+3. El archivo se guarda en:
    ```
-   reportes_pagos_RRHH/auditoria/Auditoria_AAAAMMDD_HHMMSS.pdf
+   reportes_pagos_RRHH/_auditorias/Auditoria_AAAAMMDD_HHMMSS.pdf
    ```
 
-5. Confirmación: "Reporte exportado correctamente"
-
-### Ordenar Tabla
-
-- Clic en los **encabezados de columna** para ordenar
-- Primer clic: Ascendente (↑)
-- Segundo clic: Descendente (↓)
+4. Confirmación con la ruta del archivo generado
 
 ---
 

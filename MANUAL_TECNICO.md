@@ -1,7 +1,7 @@
 # 📘 Manual Técnico - Sistema de Pagos CNI
 
 **Consejo Nacional de Inversiones - Honduras**  
-Versión 2.0 - Febrero 2026
+Versión 2.1.0 - Febrero 2026
 
 ---
 
@@ -398,23 +398,33 @@ Recalcula IHSS de todos los empleados.
 ### Histórico
 
 #### `GET /api/historico`
-Obtiene histórico de pagos.
+Obtiene histórico de pagos con filtros opcionales.
 
 **Query params**:
-- `desde` (opcional): Fecha inicio filtro
-- `hasta` (opcional): Fecha fin filtro
-
-#### `GET /api/stats`
-Obtiene estadísticas del sistema.
+- `emp` (opcional): Nombre o código del empleado
+- `fi` (opcional): Fecha inicio filtro (DD/MM/AAAA)
+- `ff` (opcional): Fecha fin filtro (DD/MM/AAAA)
 
 **Response**:
 ```json
 {
-  "total_empleados": 47,
-  "total_boletas": 285,
-  "monto_total": 7125000.50
+  "rows": [...],
+  "stats": {
+    "total": 47,
+    "neto": 7125000.50,
+    "deducciones": 425000.00
+  }
 }
 ```
+
+**Notas del Frontend**:
+- Los resultados se ordenan por fecha de mayor a menor (más reciente primero)
+- La tabla muestra solo: Fecha, Código, Empleado, Cargo, Tipo y botón "Ver"
+- Paginación de 10 registros por página
+- Modal de detalle con desglose financiero completo al hacer clic en "Ver"
+
+#### `POST /api/historico/exportar`
+Genera reporte PDF de auditoría con logo CNI y colores institucionales.
 
 ---
 
@@ -475,19 +485,26 @@ IHSS = 12,000 × (2.5% + 2.5%) = 12,000 × 5% = L. 600.00
 **Clase**: `BoletaPDF(FPDF)`
 
 **Estructura del PDF**:
-1. **Header**: Logo, título "BOLETA DE PAGO"
-2. **Información del empleado**: Código, nombre, cargo, período
-3. **Ingresos**: Salario mensual destacado en verde
-4. **Deducciones**: IHSS, ISR, Otro (si aplica)
-5. **Total deducciones**: En rojo
-6. **Salario neto**: Destacado en azul grande
-7. **Footer**: Fecha de generación, número de página
+1. **Header**: Fondo azul CNI, logo `img/logo_cni.png`, línea decorativa cyan
+2. **Texto**: "BOLETA DE PAGO" + "Consejo Nacional de Inversiones - Honduras, C.A."
+3. **Datos del empleado**: Código, nombre, cargo, correo, período (labels en azul CNI)
+4. **Ingresos**: Sección con header verde CNI, salario mensual y total
+5. **Deducciones**: Sección con header rojo, IHSS, ISR, Otro (si aplica), total
+6. **Salario Neto**: Barra azul CNI prominente con texto blanco
+7. **Footer**: Línea separadora azul, fecha de generación, versión del sistema
 
-**Colores**:
-- Header: RGB(37, 99, 235) - Azul
-- Ingresos: RGB(5, 150, 105) - Verde
-- Deducciones: RGB(220, 38, 38) - Rojo
-- Neto: RGB(37, 99, 235) - Azul
+**Colores Institucionales**:
+- `CNI_BLUE`: RGB(35, 57, 129) - #233981 - Header, labels, salario neto
+- `CNI_CYAN`: RGB(42, 170, 214) - #2AAAD6 - Línea decorativa
+- `CNI_GREEN`: RGB(27, 174, 100) - #1BAE64 - Sección ingresos
+- Deducciones: RGB(180, 40, 40) - Rojo oscuro
+
+**Reporte de Auditoría**:
+- Header con logo CNI y fondo azul institucional
+- Línea cyan decorativa bajo el header
+- Encabezados de tabla en azul CNI
+- Filas alternas para legibilidad
+- Footer con total de registros y fecha
 
 ---
 
@@ -496,17 +513,19 @@ IHSS = 12,000 × (2.5% + 2.5%) = 12,000 × 5% = L. 600.00
 **Función**: `_enviar_email(smtp_cfg, emp, fi, ff, ruta_pdf)`
 
 **Proceso**:
-1. Valida configuración SMTP
-2. Verifica correo del empleado
-3. Genera HTML del email con colores institucionales
+1. Valida configuración SMTP y correo del empleado
+2. Calcula desglose: salario, IHSS, ISR, otro, total deducciones, neto
+3. Genera HTML del email con diseño corporativo limpio
 4. Adjunta PDF si existe
 5. Envía vía SMTP (Office 365, puerto 587, STARTTLS)
 
-**Formato HTML**:
-- Header con gradiente azul institucional
-- Tabla de conceptos con colores
-- Footer con branding CNI
-- Responsive design
+**Formato HTML del Email**:
+- Diseño table-based para máxima compatibilidad con clientes de correo
+- `color-scheme: light only` para evitar alteraciones en modo oscuro
+- Fondo blanco, header azul CNI (#233981)
+- Tabla de conceptos: salario, deducciones (rojo #cc0000), neto (azul CNI)
+- Paleta limitada: solo #233981, #ffffff, #333333, #cc0000
+- Compatible con Outlook, Gmail, Apple Mail, Thunderbird
 
 ---
 

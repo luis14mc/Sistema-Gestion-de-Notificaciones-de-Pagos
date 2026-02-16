@@ -1,12 +1,12 @@
 Sistema de Pagos CNI
 Consejo Nacional de Inversiones - Honduras
 
-VERSIÓN: 2.0.0
-FECHA: 11 de Febrero 2026
-ESTADO: Producción
-BUILD: 2026.02.11
+VERSION: 2.1.0
+FECHA: 16 de Febrero 2026
+ESTADO: Produccion
+BUILD: 2026.02.16
 
-DESARROLLADOR: Ing. Luis Martínez
+DESARROLLADOR: Ing. Luis Martinez
 EMAIL: luismartinez.94mc@gmail.com
 ROL: Software Developer
 
@@ -14,4 +14,12 @@ SOPORTE CNI:
 Oficial de TI
 Email: amartinez@cni.hn
 
-ÚLTIMA ACTUALIZACIÓN: 11/02/2026
+ULTIMA ACTUALIZACION: 16/02/2026
+
+CAMBIOS v2.1.0:
+- Selector de mes en Boleta (periodo del 20 al 20 automatico)
+- Historico con paginacion, tabla simplificada y modal de detalle
+- PDFs con logo CNI y colores institucionales
+- Email corporativo limpio compatible con modo oscuro
+- Validacion de fechas en todos los formularios
+- Reporte de auditoria con branding CNI
