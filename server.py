@@ -483,88 +483,202 @@ def api_calcular_isr():
     return jsonify({"isr_mensual": isr_mensual})
 
 # ── Logica: PDF ─────────────────────────────────────────────────
+CNI_BLUE = (35, 57, 129)
+CNI_CYAN = (42, 170, 214)
+CNI_GREEN = (27, 174, 100)
+LOGO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "img", "logo_cni.png")
+
 class BoletaPDF(FPDF):
     def header(self):
-        self.set_fill_color(37,99,235); self.rect(0,0,210,36,"F")
-        self.set_font("Helvetica","B",18); self.set_text_color(255,255,255)
-        self.set_y(8); self.cell(0,10,"BOLETA DE PAGO",align="C",new_x=XPos.LMARGIN,new_y=YPos.NEXT)
-        self.set_font("Helvetica","",9); self.set_text_color(219,234,254)
-        self.cell(0,6,"Sistema de Recursos Humanos",align="C",new_x=XPos.LMARGIN,new_y=YPos.NEXT)
-        self.ln(10)
+        # Barra azul CNI
+        self.set_fill_color(*CNI_BLUE)
+        self.rect(0, 0, 210, 44, "F")
+        # Linea cyan decorativa
+        self.set_fill_color(*CNI_CYAN)
+        self.rect(0, 44, 210, 2, "F")
+        # Logo
+        if os.path.exists(LOGO_PATH):
+            self.image(LOGO_PATH, 14, 6, 32)
+        # Texto header
+        self.set_y(10)
+        self.set_font("Helvetica", "B", 18)
+        self.set_text_color(255, 255, 255)
+        self.cell(0, 8, "BOLETA DE PAGO", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        self.set_font("Helvetica", "", 9)
+        self.set_text_color(255, 255, 255)
+        self.cell(0, 5, "Consejo Nacional de Inversiones", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        self.set_font("Helvetica", "", 7)
+        self.set_text_color(200, 210, 230)
+        self.cell(0, 5, "Honduras, C.A.", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        self.ln(8)
+
     def footer(self):
-        self.set_y(-15); self.set_font("Helvetica","I",7); self.set_text_color(148,163,184)
-        self.cell(0,8,f"Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}  |  Pagina {self.page_no()}",align="C")
-    def section(self, text, r, g, b):
-        self.set_font("Helvetica","B",10); self.set_fill_color(r,g,b); self.set_text_color(30,41,59)
-        self.cell(0,8,f"   {text}",fill=True,new_x=XPos.LMARGIN,new_y=YPos.NEXT); self.ln(3)
-    def row(self, label, value, bold=False, color=None):
-        f="B" if bold else ""
-        self.set_font("Helvetica",f,9); self.set_text_color(71,85,105)
-        self.cell(125,7,f"   {label}")
-        if color: self.set_text_color(*color)
-        self.set_font("Helvetica","B" if bold else "",9)
-        self.cell(0,7,value,align="R",new_x=XPos.LMARGIN,new_y=YPos.NEXT)
-        self.set_text_color(71,85,105)
+        self.set_y(-18)
+        self.set_draw_color(*CNI_BLUE)
+        self.line(15, self.get_y(), 195, self.get_y())
+        self.ln(2)
+        self.set_font("Helvetica", "", 7)
+        self.set_text_color(120, 120, 120)
+        self.cell(0, 4, f"Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}  |  Pagina {self.page_no()}", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        self.set_font("Helvetica", "", 6)
+        self.set_text_color(160, 160, 160)
+        self.cell(0, 4, "Sistema de Pagos CNI v2.0.0 - Consejo Nacional de Inversiones", align="C")
+
+    def section(self, text, is_income=False, is_deduction=False):
+        if is_income:
+            self.set_fill_color(*CNI_GREEN)
+        elif is_deduction:
+            self.set_fill_color(180, 40, 40)
+        else:
+            self.set_fill_color(*CNI_BLUE)
+        self.set_font("Helvetica", "B", 9)
+        self.set_text_color(255, 255, 255)
+        self.cell(0, 8, f"   {text}", fill=True, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        self.ln(2)
+
+    def row(self, label, value, bold=False, is_deduction=False):
+        f = "B" if bold else ""
+        self.set_font("Helvetica", f, 9)
+        self.set_text_color(50, 50, 50)
+        self.cell(125, 7, f"   {label}")
+        if is_deduction:
+            self.set_text_color(180, 40, 40)
+        else:
+            self.set_text_color(50, 50, 50)
+        self.set_font("Helvetica", "B" if bold else "", 9)
+        self.cell(0, 7, value, align="R", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        # Linea separadora sutil
+        if not bold:
+            self.set_draw_color(220, 220, 220)
+            self.line(15, self.get_y(), 195, self.get_y())
 
 def _generar_pdf(emp, fi, ff):
-    n,cod,cargo = emp["nombre_empleado"],emp["cod_empleado"],emp["cargo"]
+    n, cod, cargo = emp["nombre_empleado"], emp["cod_empleado"], emp["cargo"]
     sal = emp["salario_mensual"]
-    ihss,isr,otro = float(emp.get("ihss",0) or 0),float(emp.get("isr",0) or 0),float(emp.get("otro",0) or 0)
-    obs = emp.get("observacion_otro","") or ""
-    td=ihss+isr+otro; neto=sal-td
-    fecha_fin = datetime.strptime(ff,"%d/%m/%Y")
-    mes=MESES[fecha_fin.month-1]; anio=fecha_fin.year
-    carpeta=os.path.join(REPORTES_DIR,f"{cod}_{n.replace(' ','_')}")
-    os.makedirs(carpeta,exist_ok=True)
-    ruta=os.path.join(carpeta,f"Boleta_{mes}_{anio}.pdf")
-    pdf=BoletaPDF(); pdf.add_page()
-    pdf.section("DATOS DEL EMPLEADO",241,245,249)
-    for l,v in [("Codigo:",cod),("Nombre:",n),("Cargo:",cargo),("Periodo:",f"{fi} al {ff}")]:
-        pdf.set_font("Helvetica","B",9); pdf.cell(45,7,f"   {l}")
-        pdf.set_font("Helvetica","",9); pdf.cell(0,7,v,new_x=XPos.LMARGIN,new_y=YPos.NEXT)
+    ihss = float(emp.get("ihss", 0) or 0)
+    isr = float(emp.get("isr", 0) or 0)
+    otro = float(emp.get("otro", 0) or 0)
+    obs = emp.get("observacion_otro", "") or ""
+    td = ihss + isr + otro
+    neto = sal - td
+    fecha_fin = datetime.strptime(ff, "%d/%m/%Y")
+    mes = MESES[fecha_fin.month - 1]
+    anio = fecha_fin.year
+    carpeta = os.path.join(REPORTES_DIR, f"{cod}_{n.replace(' ', '_')}")
+    os.makedirs(carpeta, exist_ok=True)
+    ruta = os.path.join(carpeta, f"Boleta_{mes}_{anio}.pdf")
+
+    pdf = BoletaPDF()
+    pdf.add_page()
+
+    # Datos del empleado
+    pdf.section("DATOS DEL EMPLEADO")
+    for l, v in [("Codigo:", cod), ("Nombre:", n), ("Cargo:", cargo),
+                 ("Correo:", emp.get("correo_institucional", "") or "N/A"),
+                 ("Periodo:", f"{fi} al {ff}")]:
+        pdf.set_font("Helvetica", "B", 9)
+        pdf.set_text_color(*CNI_BLUE)
+        pdf.cell(45, 7, f"   {l}")
+        pdf.set_font("Helvetica", "", 9)
+        pdf.set_text_color(50, 50, 50)
+        pdf.cell(0, 7, v, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     pdf.ln(4)
-    pdf.section("INGRESOS",209,250,229)
-    pdf.row("Salario Mensual",fmt(sal),color=(5,150,105))
-    pdf.set_draw_color(226,232,240); pdf.line(15,pdf.get_y()+1,195,pdf.get_y()+1); pdf.ln(2)
-    pdf.row("Total Ingresos",fmt(sal),bold=True,color=(5,150,105)); pdf.ln(4)
-    pdf.section("DEDUCCIONES",254,226,226)
-    pdf.row("IHSS (Seguro Social)",fmt(ihss),color=(220,38,38))
-    pdf.row("ISR (Impuesto Sobre la Renta)",fmt(isr),color=(220,38,38))
-    if otro>0:
-        pdf.row(f"Otro ({obs})" if obs else "Otra Deduccion",fmt(otro),color=(220,38,38))
-    pdf.set_draw_color(226,232,240); pdf.line(15,pdf.get_y()+2,195,pdf.get_y()+2); pdf.ln(3)
-    pdf.row("Total Deducciones",fmt(td),bold=True,color=(220,38,38)); pdf.ln(8)
-    pdf.set_font("Helvetica","B",13); pdf.set_fill_color(37,99,235); pdf.set_text_color(255,255,255)
-    pdf.cell(125,13,"   SALARIO NETO",fill=True)
-    pdf.cell(0,13,f"{fmt(neto)}   ",fill=True,align="R",new_x=XPos.LMARGIN,new_y=YPos.NEXT)
+
+    # Ingresos
+    pdf.section("INGRESOS", is_income=True)
+    pdf.row("Salario Mensual", fmt(sal))
+    pdf.ln(1)
+    pdf.set_draw_color(*CNI_GREEN)
+    pdf.line(15, pdf.get_y(), 195, pdf.get_y())
+    pdf.ln(1)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(*CNI_GREEN)
+    pdf.cell(125, 8, "   Total Ingresos")
+    pdf.cell(0, 8, fmt(sal), align="R", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.ln(4)
+
+    # Deducciones
+    pdf.section("DEDUCCIONES", is_deduction=True)
+    pdf.row("IHSS (Seguro Social)", fmt(ihss), is_deduction=True)
+    pdf.row("ISR (Impuesto Sobre la Renta)", fmt(isr), is_deduction=True)
+    if otro > 0:
+        pdf.row(f"Otro ({obs})" if obs else "Otra Deduccion", fmt(otro), is_deduction=True)
+    pdf.ln(1)
+    pdf.set_draw_color(180, 40, 40)
+    pdf.line(15, pdf.get_y(), 195, pdf.get_y())
+    pdf.ln(1)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(180, 40, 40)
+    pdf.cell(125, 8, "   Total Deducciones")
+    pdf.cell(0, 8, f"-{fmt(td)}", align="R", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.ln(6)
+
+    # Salario Neto
+    pdf.set_fill_color(*CNI_BLUE)
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.set_text_color(255, 255, 255)
+    pdf.cell(125, 14, "   SALARIO NETO", fill=True)
+    pdf.cell(0, 14, f"{fmt(neto)}   ", fill=True, align="R", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+
     pdf.output(ruta)
     return ruta
 
 def _generar_auditoria(rows, filtro=""):
-    carpeta=os.path.join(REPORTES_DIR,"_auditorias"); os.makedirs(carpeta,exist_ok=True)
-    ruta=os.path.join(carpeta,f"Auditoria_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
-    pdf=FPDF(); pdf.add_page("L"); pdf.set_auto_page_break(True,20)
-    pdf.set_fill_color(37,99,235); pdf.rect(0,0,297,24,"F")
-    pdf.set_font("Helvetica","B",14); pdf.set_text_color(255,255,255); pdf.set_y(5)
-    pdf.cell(0,10,"REPORTE DE AUDITORIA - HISTORICO DE PAGOS",align="C",new_x=XPos.LMARGIN,new_y=YPos.NEXT)
+    carpeta = os.path.join(REPORTES_DIR, "_auditorias")
+    os.makedirs(carpeta, exist_ok=True)
+    ruta = os.path.join(carpeta, f"Auditoria_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
+    pdf = FPDF()
+    pdf.add_page("L")
+    pdf.set_auto_page_break(True, 25)
+
+    # Header con logo y colores CNI
+    pdf.set_fill_color(*CNI_BLUE)
+    pdf.rect(0, 0, 297, 28, "F")
+    pdf.set_fill_color(*CNI_CYAN)
+    pdf.rect(0, 28, 297, 1.5, "F")
+    if os.path.exists(LOGO_PATH):
+        pdf.image(LOGO_PATH, 8, 3, 22)
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_y(6)
+    pdf.cell(0, 8, "REPORTE DE AUDITORIA", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.set_font("Helvetica", "", 8)
+    pdf.cell(0, 5, "Consejo Nacional de Inversiones - Historico de Pagos", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     pdf.ln(6)
-    cols=[("Fecha",26),("Cod",20),("Empleado",50),("Cargo",38),("Periodo",40),
-          ("Salario",26),("IHSS",20),("ISR",20),("Otro",20),("Deducc.",26),("Neto",26),("Tipo",15)]
-    pdf.set_font("Helvetica","B",7); pdf.set_fill_color(37,99,235); pdf.set_text_color(255,255,255)
-    for t,w in cols: pdf.cell(w,7,t,fill=True,align="C")
+
+    # Encabezados de tabla
+    cols = [("Fecha", 26), ("Cod", 20), ("Empleado", 50), ("Cargo", 38), ("Periodo", 40),
+            ("Salario", 26), ("IHSS", 20), ("ISR", 20), ("Otro", 20), ("Deducc.", 26), ("Neto", 26), ("Tipo", 15)]
+    pdf.set_font("Helvetica", "B", 7)
+    pdf.set_fill_color(*CNI_BLUE)
+    pdf.set_text_color(255, 255, 255)
+    for t, w in cols:
+        pdf.cell(w, 7, t, fill=True, align="C")
     pdf.ln()
-    pdf.set_font("Helvetica","",7)
-    for i,r in enumerate(rows):
-        bg=(248,250,252) if i%2==0 else (255,255,255); pdf.set_fill_color(*bg); pdf.set_text_color(30,41,59)
-        data=[r.get("fecha_generacion",""),r["cod_empleado"],r["nombre_empleado"][:24],
-              r["cargo"][:18],f"{r['fecha_inicio']}-{r['fecha_fin']}",
-              fmt(r["salario"]),fmt(r["ihss"]),fmt(r["isr"]),fmt(r["otro"]),
-              fmt(r["total_deducciones"]),fmt(r["salario_neto"]),r["tipo"]]
-        for j,(t,w) in enumerate(cols):
-            a="C" if j in(0,1,4,11) else "L" if j in(2,3) else "R"
-            pdf.cell(w,6,data[j],fill=True,align=a)
+
+    # Filas de datos
+    pdf.set_font("Helvetica", "", 7)
+    for i, r in enumerate(rows):
+        bg = (245, 247, 250) if i % 2 == 0 else (255, 255, 255)
+        pdf.set_fill_color(*bg)
+        pdf.set_text_color(50, 50, 50)
+        data = [r.get("fecha_generacion", ""), r["cod_empleado"], r["nombre_empleado"][:24],
+                r["cargo"][:18], f"{r['fecha_inicio']}-{r['fecha_fin']}",
+                fmt(r["salario"]), fmt(r["ihss"]), fmt(r["isr"]), fmt(r["otro"]),
+                fmt(r["total_deducciones"]), fmt(r["salario_neto"]), r["tipo"]]
+        for j, (t, w) in enumerate(cols):
+            a = "C" if j in (0, 1, 4, 11) else "L" if j in (2, 3) else "R"
+            pdf.cell(w, 6, data[j], fill=True, align=a)
         pdf.ln()
-    pdf.output(ruta); return ruta
+
+    # Footer de auditoria
+    pdf.ln(4)
+    pdf.set_font("Helvetica", "", 7)
+    pdf.set_text_color(120, 120, 120)
+    pdf.cell(0, 5, f"Total registros: {len(rows)}  |  Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}  |  Sistema de Pagos CNI v2.0.0", align="C")
+
+    pdf.output(ruta)
+    return ruta
 
 # ── Logica: Email ───────────────────────────────────────────────
 def _enviar_email(smtp_cfg, emp, fi, ff, ruta_pdf):
