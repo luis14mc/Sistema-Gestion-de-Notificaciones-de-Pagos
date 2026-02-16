@@ -33,13 +33,14 @@ Sistema integral para la gestión de recursos humanos, nómina y generación de 
 
 ### Opción 1: Ejecutable Pre-compilado (Recomendado para Usuarios)
 
-**Descarga el ejecutable para tu sistema operativo:**
+**Descarga el ejecutable para Windows:**
 
-- **Windows:** `SistemaPagosCNI_v2.0.0_Windows.zip` (~150 MB)
-- **Linux:** `SistemaPagosCNI_v2.0.0_Linux.tar.gz` (~23 MB)
-- **macOS:** `SistemaPagosCNI_v2.0.0_macOS.zip` (~130 MB)
+- **Windows:** `SistemaPagosCNI_v2.0.0_Windows.zip` (~150-200 MB)
+  - Ver guía de compilación: [`COMPILAR_WINDOWS.md`](COMPILAR_WINDOWS.md)
 
-**Instrucciones detalladas:** Ver [`INSTALACION.md`](INSTALACION.md)
+**Instrucciones de instalación:** Ver [`INSTALACION.md`](INSTALACION.md)
+
+**Nota:** El sistema está diseñado para Windows. La compilación debe hacerse en Windows nativo (no en WSL).
 
 ### Opción 2: Instalación desde Código Fuente (Para Desarrolladores)
 
@@ -81,19 +82,21 @@ python app.py
 
 Para desarrolladores que desean compilar el ejecutable:
 
-**Ver instrucciones completas:** [`INSTRUCCIONES_BUILD.md`](INSTRUCCIONES_BUILD.md)
+**⚠️ IMPORTANTE:** Debes compilar en Windows nativo para crear el `.exe`
 
-**Compilación rápida:**
+**Ver guía completa:** [`COMPILAR_WINDOWS.md`](COMPILAR_WINDOWS.md)
 
-```bash
-# Linux/Mac
-./build.sh
+**Compilación rápida en Windows:**
 
-# Windows
+```cmd
+REM En PowerShell o CMD (Windows nativo, NO WSL)
+python -m venv venv_windows
+venv_windows\Scripts\activate
+pip install -r requirements.txt
 build.bat
 ```
 
-El ejecutable se generará en `dist/SistemaPagosCNI/`.
+El ejecutable se generará en `dist\SistemaPagosCNI\SistemaPagosCNI.exe`
 
 ---
 
@@ -112,8 +115,11 @@ El ejecutable se generará en `dist/SistemaPagosCNI/`.
 - **[Instalación](INSTALACION.md)**: Guía completa de instalación para usuarios finales
 - **[Manual de Usuario](MANUAL_USUARIO.md)**: Guía detallada paso a paso
 - **[Manual Técnico](MANUAL_TECNICO.md)**: Arquitectura, APIs y desarrollo
-- **[Compilación](INSTRUCCIONES_BUILD.md)**: Crear ejecutables desde código fuente
+- **[Compilación Windows](COMPILAR_WINDOWS.md)**: ⚠️ Crear ejecutable .exe para Windows
+- **[Compilación General](INSTRUCCIONES_BUILD.md)**: Información general de build
 - **[GitHub](INSTRUCCIONES_PUSH_GITHUB.md)**: Instrucciones para push al repositorio
+- **[Inicio Rápido](INICIO_RAPIDO.md)**: Guía rápida para empezar
+- **[Resumen de Entrega](RESUMEN_ENTREGA.md)**: Checklist completo del proyecto
 
 ---
 
