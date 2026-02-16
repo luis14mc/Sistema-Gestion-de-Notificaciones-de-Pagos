@@ -47,20 +47,24 @@ tbody tr.row-selected td{color:#1e40af}
 .input-field::placeholder{color:#94a3b8}
 select.input-field{cursor:pointer;appearance:auto}
 /* Estilos para date inputs (calendarios) */
-input[type="date"].input-field{
+input[type="date"].input-field,
+input[type="month"].input-field{
   cursor:pointer;
   color:#475569;
   font-weight:500;
 }
-input[type="date"].input-field::-webkit-calendar-picker-indicator{
+input[type="date"].input-field::-webkit-calendar-picker-indicator,
+input[type="month"].input-field::-webkit-calendar-picker-indicator{
   cursor:pointer;
   opacity:0.6;
   transition:opacity .15s;
 }
-input[type="date"].input-field:hover::-webkit-calendar-picker-indicator{
+input[type="date"].input-field:hover::-webkit-calendar-picker-indicator,
+input[type="month"].input-field:hover::-webkit-calendar-picker-indicator{
   opacity:1;
 }
-input[type="date"].input-field:focus{
+input[type="date"].input-field:focus,
+input[type="month"].input-field:focus{
   border-color:#2AAAD6;
   box-shadow:0 0 0 3px rgba(42,170,214,.1);
 }
@@ -340,13 +344,10 @@ nav .nav-item.active svg {
               <option value="">Seleccione empleado</option>
             </select>
           </div>
-          <div class="col-span-2">
-            <label class="block text-xs font-semibold text-slate-500 mb-2">Desde</label>
-            <input id="b-fi" type="date" class="input-field" onchange="validarFechasBoleta()">
-          </div>
-          <div class="col-span-2">
-            <label class="block text-xs font-semibold text-slate-500 mb-2">Hasta</label>
-            <input id="b-ff" type="date" class="input-field" onchange="validarFechasBoleta()">
+          <div class="col-span-4">
+            <label class="block text-xs font-semibold text-slate-500 mb-2">Mes de Pago</label>
+            <input id="b-mes" type="month" class="input-field" onchange="actualizarPeriodoBoleta()">
+            <p id="b-periodo-info" class="text-[10px] text-cni-cyan font-medium mt-1.5"></p>
           </div>
           <div class="col-span-3">
             <button onclick="previewBoleta()" class="btn bg-blue-600 hover:bg-blue-700 text-white w-full shadow-lg shadow-blue-500/25">
@@ -654,28 +655,41 @@ function getTodayInput() {
   return now.toISOString().split('T')[0];
 }
 
-function getFirstDayOfMonth() {
-  // Retorna primer día del mes en formato YYYY-MM-DD
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+
+// ── Mes de Pago (Boleta) ──
+function getCurrentMonth(){
+  const now=new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+}
+function mesAFechas(mesValue){
+  // Convierte YYYY-MM a {fi: 'DD/MM/AAAA', ff: 'DD/MM/AAAA', fi_input: 'YYYY-MM-DD', ff_input: 'YYYY-MM-DD'}
+  if(!mesValue) return null;
+  const [anio, mes] = mesValue.split('-').map(Number);
+  const ultimoDia = new Date(anio, mes, 0).getDate();
+  const mm = String(mes).padStart(2,'0');
+  return {
+    fi: `01/${mm}/${anio}`,
+    ff: `${String(ultimoDia).padStart(2,'0')}/${mm}/${anio}`,
+    fi_input: `${anio}-${mm}-01`,
+    ff_input: `${anio}-${mm}-${String(ultimoDia).padStart(2,'0')}`
+  };
+}
+function getNombreMes(mesValue){
+  if(!mesValue) return '';
+  const [anio, mes] = mesValue.split('-').map(Number);
+  const fecha = new Date(anio, mes-1, 1);
+  const nombre = fecha.toLocaleDateString('es-HN',{month:'long',year:'numeric'});
+  return nombre.charAt(0).toUpperCase() + nombre.slice(1);
+}
+function actualizarPeriodoBoleta(){
+  const mesVal = document.getElementById('b-mes').value;
+  const info = document.getElementById('b-periodo-info');
+  if(!mesVal){ info.textContent=''; return; }
+  const f = mesAFechas(mesVal);
+  info.textContent = `Periodo: ${f.fi} al ${f.ff}`;
 }
 
-function getLastDayOfMonth() {
-  // Retorna último día del mes en formato YYYY-MM-DD
-  const now = new Date();
-  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-}
-
-// ── Validacion de Fechas ──
-function validarFechasBoleta(){
-  const fi=document.getElementById('b-fi').value;
-  const ff=document.getElementById('b-ff').value;
-  if(fi && ff && ff < fi){
-    document.getElementById('b-ff').value = fi;
-    Swal.fire({icon:'warning',title:'Fecha Invalida',text:'La fecha "Hasta" no puede ser menor que la fecha "Desde". Se ha ajustado automaticamente.',confirmButtonColor:'#2563eb',timer:3000,timerProgressBar:true});
-  }
-}
+// ── Validacion de Fechas (Historico) ──
 function validarFechasHistorico(){
   const fi=document.getElementById('h-fi').value;
   const ff=document.getElementById('h-ff').value;
@@ -683,14 +697,6 @@ function validarFechasHistorico(){
     document.getElementById('h-ff').value = fi;
     Swal.fire({icon:'warning',title:'Fecha Invalida',text:'La fecha "Hasta" no puede ser menor que la fecha "Desde". Se ha ajustado automaticamente.',confirmButtonColor:'#2563eb',timer:3000,timerProgressBar:true});
   }
-}
-function validarFechas(fi_input, ff_input){
-  if(!fi_input||!ff_input) return false;
-  if(ff_input < fi_input){
-    Swal.fire({icon:'error',title:'Error de Fechas',text:'La fecha final no puede ser anterior a la fecha inicial. Por favor corrija el periodo.',confirmButtonColor:'#2563eb'});
-    return true;
-  }
-  return false;
 }
 
 let selectedEmpId=null,editingId=null,boletaEmp=null;
@@ -815,22 +821,19 @@ async function loadBoletaEmps(){
   const sel=document.getElementById('b-emp');
   sel.innerHTML='<option value="">Seleccione empleado</option>'+data.map(e=>`<option value="${e.id}">${e.cod_empleado} — ${e.nombre_empleado}</option>`).join('');
   
-  // Establecer fechas por defecto (primer y último día del mes actual)
-  if(!document.getElementById('b-fi').value){
-    document.getElementById('b-fi').value = getFirstDayOfMonth();
-    document.getElementById('b-ff').value = getLastDayOfMonth();
+  // Establecer mes actual por defecto
+  if(!document.getElementById('b-mes').value){
+    document.getElementById('b-mes').value = getCurrentMonth();
+    actualizarPeriodoBoleta();
   }
 }
 async function onBoletaEmp(){const id=document.getElementById('b-emp').value;if(id)boletaEmp=await(await fetch('/api/empleados/'+id)).json()}
 function previewBoleta(){
   const e=boletaEmp;if(!e)return Swal.fire({icon:'info',title:'Sin Seleccion',text:'Seleccione un empleado.',confirmButtonColor:'#2563eb'});
-  const fi_input=document.getElementById('b-fi').value,ff_input=document.getElementById('b-ff').value;
-  if(!fi_input||!ff_input)return Swal.fire({icon:'warning',title:'Fechas',text:'Ingrese ambas fechas.',confirmButtonColor:'#2563eb'});
-  if(validarFechas(fi_input, ff_input)) return;
-  
-  // Convertir a formato DD/MM/AAAA para display
-  const fi = inputToDate(fi_input);
-  const ff = inputToDate(ff_input);
+  const mesVal=document.getElementById('b-mes').value;
+  if(!mesVal)return Swal.fire({icon:'warning',title:'Mes Requerido',text:'Seleccione el mes de pago.',confirmButtonColor:'#2563eb'});
+  const fechas=mesAFechas(mesVal);
+  const fi=fechas.fi, ff=fechas.ff;
   
   const sal=e.salario_mensual,ihss=e.ihss||0,isr=e.isr||0,otro=e.otro||0,obs=e.observacion_otro||'';
   const td=ihss+isr+otro,neto=sal-td;
@@ -862,14 +865,10 @@ function previewBoleta(){
 
 async function _boletaAction(endpoint){
   const id=document.getElementById('b-emp').value;
-  const fi_input=document.getElementById('b-fi').value;
-  const ff_input=document.getElementById('b-ff').value;
-  if(!id||!fi_input||!ff_input)return;
-  if(validarFechas(fi_input, ff_input)) return;
-  
-  // Convertir fechas a formato DD/MM/AAAA para el servidor
-  const fi = inputToDate(fi_input);
-  const ff = inputToDate(ff_input);
+  const mesVal=document.getElementById('b-mes').value;
+  if(!id||!mesVal)return;
+  const fechas=mesAFechas(mesVal);
+  const fi=fechas.fi, ff=fechas.ff;
   
   Swal.fire({title:'Procesando...',text:'Generando boleta de pago',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
   try{
@@ -885,18 +884,15 @@ function boletaBoth(){_boletaAction('/api/boleta/both')}
 
 // ── GENERAR TODOS ──
 async function generarTodos(){
-  const fi_input=document.getElementById('b-fi').value;
-  const ff_input=document.getElementById('b-ff').value;
-  if(!fi_input||!ff_input)return Swal.fire({icon:'warning',title:'Fechas Requeridas',text:'Ingrese las fechas Desde y Hasta antes de generar.',confirmButtonColor:'#2563eb'});
-  if(validarFechas(fi_input, ff_input)) return;
-  
-  // Convertir a formato DD/MM/AAAA para display y servidor
-  const fi = inputToDate(fi_input);
-  const ff = inputToDate(ff_input);
+  const mesVal=document.getElementById('b-mes').value;
+  if(!mesVal)return Swal.fire({icon:'warning',title:'Mes Requerido',text:'Seleccione el mes de pago antes de generar.',confirmButtonColor:'#2563eb'});
+  const fechas=mesAFechas(mesVal);
+  const fi=fechas.fi, ff=fechas.ff;
+  const nombreMes=getNombreMes(mesVal);
   
   const {value:modo}=await Swal.fire({
     title:'Generar Boletas para Todos',
-    html:`<p class="text-sm text-slate-500 mb-4">Se generaran boletas para <b>todos los empleados</b> del periodo <b>${fi}</b> al <b>${ff}</b>.</p><p class="text-xs text-slate-400">Seleccione el metodo de generacion:</p>`,
+    html:`<p class="text-sm text-slate-500 mb-4">Se generaran boletas para <b>todos los empleados</b> del mes de <b>${nombreMes}</b><br><span class="text-xs text-slate-400">(${fi} al ${ff})</span></p><p class="text-xs text-slate-400">Seleccione el metodo de generacion:</p>`,
     input:'select',inputOptions:{'pdf':'Solo PDF','email':'Solo Correo','both':'PDF + Correo'},
     inputPlaceholder:'Seleccione una opcion',showCancelButton:true,confirmButtonColor:'#7c3aed',cancelButtonColor:'#64748b',
     confirmButtonText:'Generar',cancelButtonText:'Cancelar',
