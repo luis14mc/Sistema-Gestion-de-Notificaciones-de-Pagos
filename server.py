@@ -588,8 +588,8 @@ def _enviar_email(smtp_cfg, emp, fi, ff, ruta_pdf):
 <meta name="color-scheme" content="light only">
 <meta name="supported-color-schemes" content="light only">
 </head>
-<body style="margin:0;padding:0;background-color:#233981;font-family:Arial,Helvetica,sans-serif">
-<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#233981;padding:32px 0">
+<body style="margin:0;padding:0;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#ffffff;padding:32px 0">
 <tr><td align="center">
 <table width="580" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden">
 
