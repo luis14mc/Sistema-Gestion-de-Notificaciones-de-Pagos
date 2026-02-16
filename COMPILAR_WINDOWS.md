@@ -2,7 +2,7 @@
 
 ## Consejo Nacional de Inversiones - Honduras
 
-**Versión:** 2.0.0  
+**Versión:** 2.1.0  
 **Desarrollado por:** Ing. Luis Martínez  
 **Email:** luismartinez.94mc@gmail.com
 
@@ -85,12 +85,12 @@ SistemaPagosCNI.exe
 
 ```cmd
 cd dist
-tar -czf SistemaPagosCNI_v2.0.0_Windows.zip SistemaPagosCNI\
+tar -czf SistemaPagosCNI_v2.1.0_Windows.zip SistemaPagosCNI\
 ```
 
 O usa 7-Zip / WinRAR:
 1. Clic derecho en la carpeta `SistemaPagosCNI`
-2. "Comprimir" → "SistemaPagosCNI_v2.0.0_Windows.zip"
+2. "Comprimir" → "SistemaPagosCNI_v2.1.0_Windows.zip"
 
 ---
 
@@ -180,13 +180,13 @@ jobs:
     
     - name: Create ZIP
       run: |
-        Compress-Archive -Path dist/SistemaPagosCNI -DestinationPath SistemaPagosCNI_v2.0.0_Windows.zip
+        Compress-Archive -Path dist/SistemaPagosCNI -DestinationPath SistemaPagosCNI_v2.1.0_Windows.zip
     
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: windows-executable
-        path: SistemaPagosCNI_v2.0.0_Windows.zip
+        path: SistemaPagosCNI_v2.1.0_Windows.zip
 ```
 
 Luego:
@@ -309,10 +309,10 @@ cd ..\..
 
 REM Comprimir (si tienes tar en Windows)
 cd dist
-tar -czf SistemaPagosCNI_v2.0.0_Windows.zip SistemaPagosCNI
+tar -czf SistemaPagosCNI_v2.1.0_Windows.zip SistemaPagosCNI
 
 REM O comprimir con PowerShell
-Compress-Archive -Path SistemaPagosCNI -DestinationPath SistemaPagosCNI_v2.0.0_Windows.zip
+Compress-Archive -Path SistemaPagosCNI -DestinationPath SistemaPagosCNI_v2.1.0_Windows.zip
 
 REM Verificar
 dir *.zip
@@ -410,12 +410,12 @@ Guarda como `installer.iss`:
 ```ini
 [Setup]
 AppName=Sistema de Pagos CNI
-AppVersion=2.0.0
+AppVersion=2.1.0
 AppPublisher=Consejo Nacional de Inversiones
 DefaultDirName={pf}\SistemaPagosCNI
 DefaultGroupName=CNI
 OutputDir=installers
-OutputBaseFilename=SistemaPagosCNI_Setup_v2.0.0
+OutputBaseFilename=SistemaPagosCNI_Setup_v2.1.0
 Compression=lzma2
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64
@@ -440,7 +440,7 @@ Filename: "{app}\SistemaPagosCNI.exe"; Description: "Ejecutar Sistema de Pagos C
 1. Abre Inno Setup Compiler
 2. File → Open → Selecciona `installer.iss`
 3. Build → Compile
-4. El instalador se crea en `installers\SistemaPagosCNI_Setup_v2.0.0.exe`
+4. El instalador se crea en `installers\SistemaPagosCNI_Setup_v2.1.0.exe`
 
 ---
 
@@ -468,7 +468,7 @@ SistemaPagosCNI.exe
 
 REM 6. Comprimir
 cd ..
-Compress-Archive -Path SistemaPagosCNI -DestinationPath SistemaPagosCNI_v2.0.0_Windows.zip
+Compress-Archive -Path SistemaPagosCNI -DestinationPath SistemaPagosCNI_v2.1.0_Windows.zip
 ```
 
 ---

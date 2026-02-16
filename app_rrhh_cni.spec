@@ -3,37 +3,50 @@
 PyInstaller spec file para Sistema de Pagos CNI
 Consejo Nacional de Inversiones - Honduras
 
-Desarrollado por: Ing. Luis Martínez
+Desarrollado por: Ing. Luis Martinez
 Email: luismartinez.94mc@gmail.com
-Versión: 2.0.0
+Version: 2.1.0
 """
+
+import os
 
 block_cipher = None
 
-# Recopilar todos los archivos de datos necesarios
 added_files = [
     ('templates', 'templates'),
     ('static', 'static'),
     ('img', 'img'),
 ]
 
+hidden = [
+    'flask',
+    'fpdf',
+    'sqlite3',
+    'threading',
+    'socket',
+    'smtplib',
+    'webbrowser',
+    'email.mime.text',
+    'email.mime.multipart',
+    'email.mime.base',
+]
+
+# Incluir webview solo si esta disponible
+try:
+    import webview
+    hidden.append('webview')
+except ImportError:
+    pass
+
+# Icono opcional
+icon_path = 'img/logo_cni.ico' if os.path.exists('img/logo_cni.ico') else None
+
 a = Analysis(
     ['app.py'],
     pathex=[],
     binaries=[],
     datas=added_files,
-    hiddenimports=[
-        'flask',
-        'webview',
-        'fpdf',
-        'sqlite3',
-        'threading',
-        'socket',
-        'smtplib',
-        'email.mime.text',
-        'email.mime.multipart',
-        'email.mime.base',
-    ],
+    hiddenimports=hidden,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -56,13 +69,13 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,  # No mostrar consola en Windows
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=None,  # Puedes agregar un .ico aquí si tienes uno
+    icon=icon_path,
 )
 
 coll = COLLECT(

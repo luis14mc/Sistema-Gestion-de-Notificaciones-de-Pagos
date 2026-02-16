@@ -4,7 +4,7 @@ REM Consejo Nacional de Inversiones - Honduras
 REM
 REM Desarrollado por: Ing. Luis Martínez
 REM Email: luismartinez.94mc@gmail.com
-REM Versión: 2.0.0
+REM Versión: 2.1.0
 
 echo ==========================================
 echo Sistema de Pagos CNI - Build Script
