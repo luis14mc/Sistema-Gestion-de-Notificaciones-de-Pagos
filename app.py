@@ -12,8 +12,8 @@ Soporta dos modos:
 Desarrollado por: Ing. Luis Martinez
 Software Developer
 Email: luismartinez.94mc@gmail.com
-Version: 2.1.0
-Fecha: 16 de Febrero 2026
+Version: 2.2.0
+Fecha: 12 de Marzo 2026
 Estado: Produccion
 """
 
@@ -80,7 +80,7 @@ def run_browser_mode(port):
     time.sleep(1)
 
     print(f"\n{'='*55}")
-    print(f"  Sistema de Pagos CNI v2.1.0")
+    print(f"  Sistema de Pagos CNI v2.2.0")
     print(f"  Consejo Nacional de Inversiones")
     print(f"{'='*55}")
     print(f"\n  Aplicacion ejecutandose en: {url}")

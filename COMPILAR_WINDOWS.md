@@ -2,7 +2,7 @@
 
 ## Consejo Nacional de Inversiones - Honduras
 
-**Versión:** 2.1.0  
+**Versión:** 2.2.0  
 **Desarrollado por:** Ing. Luis Martínez  
 **Email:** luismartinez.94mc@gmail.com
 
@@ -83,14 +83,15 @@ SistemaPagosCNI.exe
 
 ### Paso 7: Crear Paquete de Distribución
 
-```cmd
+**Opción A - PowerShell (Windows 10+):**
+```powershell
 cd dist
-tar -czf SistemaPagosCNI_v2.1.0_Windows.zip SistemaPagosCNI\
+Compress-Archive -Path SistemaPagosCNI -DestinationPath SistemaPagosCNI_v2.2.0_Windows.zip
 ```
 
-O usa 7-Zip / WinRAR:
+**Opción B - 7-Zip / WinRAR:**
 1. Clic derecho en la carpeta `SistemaPagosCNI`
-2. "Comprimir" → "SistemaPagosCNI_v2.1.0_Windows.zip"
+2. "Comprimir" → "SistemaPagosCNI_v2.2.0_Windows.zip"
 
 ---
 

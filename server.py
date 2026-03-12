@@ -5,10 +5,10 @@ Consejo Nacional de Inversiones - Honduras
 
 Desarrollado por: Ing. Luis Martínez
 Software Developer | luismartinez.94mc@gmail.com
-Versión 2.1.0 - 16 de Febrero 2026
+Versión 2.2.0 - 12 de Marzo 2026
 Estado: Producción
 """
-import os, sqlite3, smtplib, json
+import os, sqlite3, smtplib, json, calendar
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_file
 from fpdf import FPDF
@@ -59,23 +59,46 @@ def init_db():
         total_deducciones REAL, salario_neto REAL,
         tipo TEXT DEFAULT 'PDF', fecha_generacion TEXT, ruta_pdf TEXT DEFAULT ''
     )''')
-    # ── Tabla ISR tramos progresivos ──
+    # ── Tabla ISR tramos progresivos (rangos ANUALES) ──
     c.execute('''CREATE TABLE IF NOT EXISTS isr_tramos (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         tasa REAL NOT NULL,
-        desde_mensual REAL NOT NULL,
-        hasta_mensual REAL NOT NULL,
+        desde_anual REAL NOT NULL,
+        hasta_anual REAL NOT NULL,
         descripcion TEXT DEFAULT ''
     )''')
-    # Insertar tramos por defecto 2026 si la tabla esta vacia
+    # Migrar desde_mensual/hasta_mensual si existen (compatibilidad)
+    cols_isr = {r[1] for r in c.execute("PRAGMA table_info(isr_tramos)").fetchall()}
+    if "desde_mensual" in cols_isr and "desde_anual" not in cols_isr:
+        c.execute("ALTER TABLE isr_tramos ADD COLUMN desde_anual REAL")
+        c.execute("ALTER TABLE isr_tramos ADD COLUMN hasta_anual REAL")
+        c.execute("UPDATE isr_tramos SET desde_anual = desde_mensual * 12, hasta_anual = hasta_mensual * 12")
+    # Tabla config deducciones ISR (gastos medicos + deducible IVM)
+    c.execute('''CREATE TABLE IF NOT EXISTS isr_config (
+        id INTEGER PRIMARY KEY CHECK (id=1),
+        gastos_medicos_anual REAL DEFAULT 40000.00,
+        deducible_ivm_mensual REAL DEFAULT 297.58
+    )''')
+    cols_isr_cfg = {r[1] for r in c.execute("PRAGMA table_info(isr_config)").fetchall()}
+    if "gastos_medicos_anual" not in cols_isr_cfg:
+        c.execute("DROP TABLE IF EXISTS isr_config")
+        c.execute('''CREATE TABLE isr_config (
+            id INTEGER PRIMARY KEY CHECK (id=1),
+            gastos_medicos_anual REAL DEFAULT 40000.00,
+            deducible_ivm_mensual REAL DEFAULT 297.58
+        )''')
+        c.execute("INSERT INTO isr_config (id, gastos_medicos_anual, deducible_ivm_mensual) VALUES (1, 40000.00, 297.58)")
+    else:
+        c.execute("INSERT OR IGNORE INTO isr_config (id, gastos_medicos_anual, deducible_ivm_mensual) VALUES (1, 40000.00, 297.58)")
+    # Tabla progresiva oficial 2026 (Renta Neta Gravable anual) - Referencia SH
+    tramos_oficial_2026 = [
+        (0.0,   0.01,      228324.32, "Exentos"),
+        (15.0,  228324.33, 348154.10, "15%"),
+        (20.0,  348154.11, 809660.75, "20%"),
+        (25.0,  809660.76, 999999999.99, "25%"),
+    ]
     if c.execute("SELECT COUNT(*) FROM isr_tramos").fetchone()[0] == 0:
-        tramos_2026 = [
-            (0.0,   0.01,     22360.36, "Exentos"),
-            (15.0,  22360.37, 32346.18, "15%"),
-            (20.0,  32346.19, 70805.06, "20%"),
-            (25.0,  70805.07, 99999999.99, "25%"),
-        ]
-        c.executemany("INSERT INTO isr_tramos (tasa, desde_mensual, hasta_mensual, descripcion) VALUES (?,?,?,?)", tramos_2026)
+        c.executemany("INSERT INTO isr_tramos (tasa, desde_anual, hasta_anual, descripcion) VALUES (?,?,?,?)", tramos_oficial_2026)
 
     # Migraciones
     cols = {r[1] for r in c.execute("PRAGMA table_info(empleados)").fetchall()}
@@ -90,14 +113,21 @@ def init_db():
     for col, dflt in [("emisor","'Servicios Online'"),("remitente_display","''")]:
         try: c.execute(f"ALTER TABLE smtp_config ADD COLUMN {col} TEXT DEFAULT {dflt}")
         except: pass
+    if "fecha_ingreso" not in cols:
+        try: c.execute("ALTER TABLE empleados ADD COLUMN fecha_ingreso TEXT DEFAULT NULL")
+        except: pass
     
-    # ── Tabla IHSS Configuracion ──
+    # ── Tabla IHSS Configuracion (EM + IVM) ──
     c.execute('''CREATE TABLE IF NOT EXISTS ihss_config (
         id INTEGER PRIMARY KEY CHECK (id=1),
         tasa_em REAL DEFAULT 2.5,
         tasa_ivm REAL DEFAULT 2.5,
         techo_mensual REAL DEFAULT 12000.00
     )''')
+    cols_ihss = {r[1] for r in c.execute("PRAGMA table_info(ihss_config)").fetchall()}
+    if "tasa_ivm" not in cols_ihss:
+        c.execute("ALTER TABLE ihss_config ADD COLUMN tasa_ivm REAL DEFAULT 2.5")
+        c.execute("UPDATE ihss_config SET tasa_ivm = 2.5 WHERE tasa_ivm IS NULL")
     c.execute("INSERT OR IGNORE INTO ihss_config (id, tasa_em, tasa_ivm, techo_mensual) VALUES (1, 2.5, 2.5, 12000.00)")
     
     conn.commit(); conn.close()
@@ -107,36 +137,158 @@ def fmt(a): return f"L. {a:,.2f}"
 def row_to_dict(r):
     return dict(r) if r else None
 
-# ── Calculo ISR Progresivo ──────────────────────────────────────
-def _calcular_isr(salario, db=None):
-    """Calcula ISR mensual con tabla progresiva de tramos."""
+def _parse_fecha_ingreso(fecha_ingreso):
+    """Parsea fecha_ingreso a (anio, mes, dia). Retorna None si invalida."""
+    if not fecha_ingreso or not str(fecha_ingreso).strip():
+        return None
+    s = str(fecha_ingreso).strip()
+    try:
+        if "-" in s and len(s) >= 10:  # YYYY-MM-DD
+            partes = s.split("-")
+            if len(partes) >= 3:
+                return (int(partes[0]), int(partes[1]), int(partes[2]))
+        if "/" in s:
+            partes = s.split("/")
+            if len(partes) >= 3:
+                return (int(partes[2]), int(partes[1]), int(partes[0]))
+    except (ValueError, IndexError):
+        pass
+    return None
+
+def _dias_trabajados_en_mes(dia_ingreso, anio, mes):
+    """Dias trabajados desde dia_ingreso hasta fin de mes."""
+    _, ultimo = calendar.monthrange(anio, mes)
+    return max(0, ultimo - dia_ingreso + 1)
+
+def _es_primer_mes_empleado(fecha_ingreso, anio_periodo, mes_periodo):
+    """True si el periodo (anio, mes) es el mes de ingreso del empleado."""
+    p = _parse_fecha_ingreso(fecha_ingreso)
+    if not p:
+        return False
+    anio_ing, mes_ing, _ = p
+    return anio_ing == anio_periodo and mes_ing == mes_periodo
+
+def _salario_prorrateado_primer_mes(salario_base, fecha_ingreso, anio_periodo, mes_periodo):
+    """
+    Salario del primer mes prorrateado por dias trabajados.
+    sueldo_dias = salario_base/30; Sueldo_mes_primero = sueldo_dias * cantidad_dias
+    Si no es primer mes, retorna salario_base completo.
+    """
+    if not _es_primer_mes_empleado(fecha_ingreso, anio_periodo, mes_periodo):
+        return salario_base
+    p = _parse_fecha_ingreso(fecha_ingreso)
+    if not p:
+        return salario_base
+    _, _, dia_ing = p
+    dias = _dias_trabajados_en_mes(dia_ing, anio_periodo, mes_periodo)
+    sueldo_dias = salario_base / 30.0
+    return round(sueldo_dias * dias, 2)
+
+def _meses_trabajados_en_anio(fecha_ingreso, anio):
+    """
+    Calcula cuantos meses trabajara el empleado en el anio dado segun su fecha de ingreso.
+    Si ingreso en febrero, trabaja feb-dic = 11 meses.
+    Retorna 12 si no hay fecha_ingreso o si ingreso antes de ese anio.
+    """
+    if not fecha_ingreso or not str(fecha_ingreso).strip():
+        return 12
+    s = str(fecha_ingreso).strip()
+    try:
+        if "-" in s and len(s) >= 7:
+            partes = s.split("-")
+            if len(partes) >= 2:
+                anio_ing = int(partes[0])
+                mes_ing = int(partes[1])
+                if anio_ing > anio:
+                    return 0
+                if anio_ing < anio:
+                    return 12
+                return 12 - mes_ing + 1
+        if "/" in s:
+            partes = s.split("/")
+            if len(partes) >= 3:
+                dia, mes_ing, anio_ing = int(partes[0]), int(partes[1]), int(partes[2])
+                if anio_ing > anio:
+                    return 0
+                if anio_ing < anio:
+                    return 12
+                return 12 - mes_ing + 1
+    except (ValueError, IndexError):
+        pass
+    return 12
+
+# ── Calculo ISR Progresivo (Anual con deducciones) ───────────────
+def _calcular_isr(salario, db=None, meses_trabajados=12, salario_periodo_actual=None):
+    """
+    Calcula ISR mensual segun formula Honduras.
+    Si salario_periodo_actual se pasa (prorrateado primer mes), se usa para Ingreso_Anual.
+    Deducciones: gastos_medicos prorrateado por meses + deducible_ivm * meses_trabajados.
+    """
     close_db = False
     if db is None:
         db = get_db()
         close_db = True
-    tramos = [dict(r) for r in db.execute("SELECT * FROM isr_tramos ORDER BY desde_mensual ASC").fetchall()]
+
+    # Config deducciones
+    cfg = db.execute("SELECT * FROM isr_config WHERE id=1").fetchone()
+    if cfg:
+        gastos_medicos = float(cfg["gastos_medicos_anual"] or 40000)
+        deducible_ivm = float(cfg["deducible_ivm_mensual"] or 297.58)
+    else:
+        gastos_medicos = 40000.0
+        deducible_ivm = 297.58
+
+    # Ingreso anual: si hay salario_periodo_actual (prorrateado), es primer mes
+    if salario_periodo_actual is not None and meses_trabajados > 0:
+        ingreso_anual = salario_periodo_actual + salario * (meses_trabajados - 1)
+    else:
+        ingreso_anual = salario * meses_trabajados
+
+    # Deducciones: gastos_medicos fijo anual prorrateado por meses + deducible_ivm * meses
+    deducciones_anual = (gastos_medicos * meses_trabajados / 12.0) + (deducible_ivm * meses_trabajados)
+    renta_neta_gravable = max(0.0, ingreso_anual - deducciones_anual)
+
+    # Tabla progresiva anual
+    cols = {r[1] for r in db.execute("PRAGMA table_info(isr_tramos)").fetchall()}
+    order_col = "desde_anual" if "desde_anual" in cols else "desde_mensual"
+    tramos = [dict(r) for r in db.execute(f"SELECT * FROM isr_tramos ORDER BY {order_col} ASC").fetchall()]
     if close_db:
         db.close()
+
     if not tramos:
         return 0.0
-    isr_total = 0.0
+
+    # Usar desde_anual/hasta_anual o convertir desde mensual
+    def get_desde(t):
+        if "desde_anual" in t and t["desde_anual"] is not None:
+            return float(t["desde_anual"])
+        return float(t.get("desde_mensual", 0)) * 12
+
+    def get_hasta(t):
+        if "hasta_anual" in t and t["hasta_anual"] is not None:
+            return float(t["hasta_anual"])
+        return float(t.get("hasta_mensual", 0)) * 12
+
+    isr_anual = 0.0
     for t in tramos:
-        tasa = t["tasa"] / 100.0
-        desde = t["desde_mensual"]
-        hasta = t["hasta_mensual"]
-        if salario < desde:
+        tasa = float(t["tasa"]) / 100.0
+        desde = get_desde(t)
+        hasta = get_hasta(t)
+        if renta_neta_gravable < desde:
             break
-        gravable = min(salario, hasta) - desde + 0.01
+        gravable = min(renta_neta_gravable, hasta) - desde + 0.01
         if gravable > 0:
-            isr_total += gravable * tasa
-    return round(isr_total, 2)
+            isr_anual += gravable * tasa
+
+    isr_mensual = isr_anual / meses_trabajados if meses_trabajados > 0 else 0
+    return round(isr_mensual, 2)
 
 # ── Calculo IHSS ────────────────────────────────────────────────
-def _calcular_ihss(salario, db=None):
+def _calcular_ihss(salario, db=None, salario_periodo_actual=None):
     """
-    Calcula IHSS mensual del empleado con base en configuracion.
+    Calcula IHSS mensual del empleado (EM + IVM).
     IHSS = Salario Base × (Tasa EM + Tasa IVM) / 100
-    donde Salario Base = min(Salario Real, Techo de Cotización)
+    Si salario_periodo_actual se pasa (prorrateado primer mes), se usa en lugar de salario.
     """
     close_db = False
     if db is None:
@@ -148,32 +300,46 @@ def _calcular_ihss(salario, db=None):
         db.close()
     
     if not config:
-        # Valores por defecto 2026
         tasa_em = 2.5
         tasa_ivm = 2.5
         techo = 12000.00
     else:
-        tasa_em = config["tasa_em"]
-        tasa_ivm = config["tasa_ivm"]
-        techo = config["techo_mensual"]
+        cfg = dict(config)
+        tasa_em = cfg.get("tasa_em") or 2.5
+        tasa_ivm = cfg.get("tasa_ivm") or 2.5
+        techo = cfg.get("techo_mensual") or 12000.00
     
-    # Calcular IHSS
-    salario_base = min(salario, techo)
-    ihss_total = salario_base * (tasa_em + tasa_ivm) / 100.0
+    sal_efectivo = salario_periodo_actual if salario_periodo_actual is not None else salario
+    salario_base = min(sal_efectivo, techo)
+    tasa_total = tasa_em + tasa_ivm
+    ihss_total = salario_base * tasa_total / 100.0
     return round(ihss_total, 2)
 
-def _recalcular_isr_todos(db):
-    """Recalcula ISR de todos los empleados con la tabla actual."""
-    emps = db.execute("SELECT id, salario_mensual FROM empleados").fetchall()
+def _recalcular_isr_todos(db, anio=None, mes=None):
+    """Recalcula ISR de todos los empleados (aplica reglas por fecha_ingreso)."""
+    anio = anio or datetime.now().year
+    mes = mes or datetime.now().month
+    emps = db.execute("SELECT id, salario_mensual, fecha_ingreso FROM empleados").fetchall()
     for e in emps:
-        nuevo_isr = _calcular_isr(e["salario_mensual"], db)
+        sal = e["salario_mensual"]
+        fecha_ing = e.get("fecha_ingreso") or ""
+        meses = _meses_trabajados_en_anio(fecha_ing, anio)
+        sal_periodo = _salario_prorrateado_primer_mes(sal, fecha_ing, anio, mes)
+        es_primer = _es_primer_mes_empleado(fecha_ing, anio, mes)
+        sal_isr = sal_periodo if es_primer else None
+        nuevo_isr = _calcular_isr(sal, db, meses_trabajados=meses, salario_periodo_actual=sal_isr)
         db.execute("UPDATE empleados SET isr=? WHERE id=?", (nuevo_isr, e["id"]))
 
-def _recalcular_ihss_todos(db):
-    """Recalcula IHSS de todos los empleados con la configuración actual."""
-    emps = db.execute("SELECT id, salario_mensual FROM empleados").fetchall()
+def _recalcular_ihss_todos(db, anio=None, mes=None):
+    """Recalcula IHSS de todos los empleados (aplica reglas por fecha_ingreso)."""
+    anio = anio or datetime.now().year
+    mes = mes or datetime.now().month
+    emps = db.execute("SELECT id, salario_mensual, fecha_ingreso FROM empleados").fetchall()
     for e in emps:
-        nuevo_ihss = _calcular_ihss(e["salario_mensual"], db)
+        sal = e["salario_mensual"]
+        fecha_ing = e.get("fecha_ingreso") or ""
+        sal_periodo = _salario_prorrateado_primer_mes(sal, fecha_ing, anio, mes)
+        nuevo_ihss = _calcular_ihss(sal, db, salario_periodo_actual=sal_periodo)
         db.execute("UPDATE empleados SET ihss=? WHERE id=?", (nuevo_ihss, e["id"]))
     db.commit()
 
@@ -208,12 +374,19 @@ def api_add_empleado():
     try:
         db = get_db()
         sal = float(d["salario_mensual"])
-        isr_auto = _calcular_isr(sal, db)
-        ihss_auto = _calcular_ihss(sal, db)
-        db.execute("INSERT INTO empleados (cod_empleado,nombre_empleado,cargo,salario_mensual,ihss,isr,otro,observacion_otro,correo_institucional) VALUES (?,?,?,?,?,?,?,?,?)",
+        fecha_ing = d.get("fecha_ingreso") or ""
+        anio_actual = datetime.now().year
+        mes_actual = datetime.now().month
+        meses = _meses_trabajados_en_anio(fecha_ing, anio_actual)
+        sal_periodo = _salario_prorrateado_primer_mes(sal, fecha_ing, anio_actual, mes_actual)
+        es_primer = _es_primer_mes_empleado(fecha_ing, anio_actual, mes_actual)
+        sal_isr = sal_periodo if es_primer else None
+        isr_auto = _calcular_isr(sal, db, meses_trabajados=meses, salario_periodo_actual=sal_isr)
+        ihss_auto = _calcular_ihss(sal, db, salario_periodo_actual=sal_periodo)
+        db.execute("INSERT INTO empleados (cod_empleado,nombre_empleado,cargo,salario_mensual,ihss,isr,otro,observacion_otro,correo_institucional,fecha_ingreso) VALUES (?,?,?,?,?,?,?,?,?,?)",
             (d["cod_empleado"],d["nombre_empleado"],d["cargo"],sal,
              ihss_auto,isr_auto,float(d.get("otro",0)),
-             d.get("observacion_otro",""),d.get("correo_institucional","")))
+             d.get("observacion_otro",""),d.get("correo_institucional",""), fecha_ing or None))
         db.commit(); db.close()
         return jsonify({"ok":True,"isr_calculado":isr_auto,"ihss_calculado":ihss_auto})
     except sqlite3.IntegrityError:
@@ -227,12 +400,19 @@ def api_update_empleado(eid):
     try:
         db = get_db()
         sal = float(d["salario_mensual"])
-        isr_auto = _calcular_isr(sal, db)
-        ihss_auto = _calcular_ihss(sal, db)
-        db.execute("UPDATE empleados SET cod_empleado=?,nombre_empleado=?,cargo=?,salario_mensual=?,ihss=?,isr=?,otro=?,observacion_otro=?,correo_institucional=? WHERE id=?",
+        fecha_ing = d.get("fecha_ingreso") or ""
+        anio_actual = datetime.now().year
+        mes_actual = datetime.now().month
+        meses = _meses_trabajados_en_anio(fecha_ing, anio_actual)
+        sal_periodo = _salario_prorrateado_primer_mes(sal, fecha_ing, anio_actual, mes_actual)
+        es_primer = _es_primer_mes_empleado(fecha_ing, anio_actual, mes_actual)
+        sal_isr = sal_periodo if es_primer else None
+        isr_auto = _calcular_isr(sal, db, meses_trabajados=meses, salario_periodo_actual=sal_isr)
+        ihss_auto = _calcular_ihss(sal, db, salario_periodo_actual=sal_periodo)
+        db.execute("UPDATE empleados SET cod_empleado=?,nombre_empleado=?,cargo=?,salario_mensual=?,ihss=?,isr=?,otro=?,observacion_otro=?,correo_institucional=?,fecha_ingreso=? WHERE id=?",
             (d["cod_empleado"],d["nombre_empleado"],d["cargo"],sal,
              ihss_auto,isr_auto,float(d.get("otro",0)),
-             d.get("observacion_otro",""),d.get("correo_institucional",""),eid))
+             d.get("observacion_otro",""),d.get("correo_institucional",""), fecha_ing or None, eid))
         db.commit(); db.close()
         return jsonify({"ok":True,"isr_calculado":isr_auto,"ihss_calculado":ihss_auto})
     except Exception as e:
@@ -385,23 +565,52 @@ def api_historico_exportar():
 @app.route("/api/isr/tramos")
 def api_isr_tramos():
     db = get_db()
-    rows = [dict(r) for r in db.execute("SELECT * FROM isr_tramos ORDER BY desde_mensual ASC").fetchall()]
+    cols = {r[1] for r in db.execute("PRAGMA table_info(isr_tramos)").fetchall()}
+    order_col = "desde_anual" if "desde_anual" in cols else "desde_mensual"
+    rows = [dict(r) for r in db.execute(f"SELECT * FROM isr_tramos ORDER BY {order_col} ASC").fetchall()]
     db.close()
     return jsonify(rows)
 
+@app.route("/api/isr/config")
+def api_isr_config():
+    db = get_db()
+    r = db.execute("SELECT * FROM isr_config WHERE id=1").fetchone()
+    db.close()
+    if r:
+        return jsonify(dict(r))
+    return jsonify({"gastos_medicos_anual": 40000, "deducible_ivm_mensual": 297.58})
+
+@app.route("/api/isr/config", methods=["POST"])
+def api_isr_config_save():
+    d = request.json
+    db = get_db()
+    db.execute("INSERT OR REPLACE INTO isr_config (id, gastos_medicos_anual, deducible_ivm_mensual) VALUES (1,?,?)",
+        (float(d.get("gastos_medicos_anual", 40000)), float(d.get("deducible_ivm_mensual", 297.58))))
+    db.commit()
+    db.close()
+    return jsonify({"ok": True})
+
 @app.route("/api/isr/tramos", methods=["POST"])
 def api_isr_tramos_save():
-    """Reemplaza todos los tramos con los nuevos."""
+    """Reemplaza todos los tramos con los nuevos (rangos ANUALES)."""
     tramos = request.json.get("tramos", [])
     if not tramos:
         return jsonify({"ok": False, "error": "Debe haber al menos un tramo."}), 400
     db = get_db()
+    cols = {r[1] for r in db.execute("PRAGMA table_info(isr_tramos)").fetchall()}
+    use_anual = "desde_anual" in cols
     db.execute("DELETE FROM isr_tramos")
     for t in tramos:
-        db.execute("INSERT INTO isr_tramos (tasa, desde_mensual, hasta_mensual, descripcion) VALUES (?,?,?,?)",
-            (float(t["tasa"]), float(t["desde_mensual"]), float(t["hasta_mensual"]), t.get("descripcion", "")))
-    # Recalcular ISR de todos los empleados
+        if use_anual:
+            d = float(t.get("desde_anual", t.get("desde_mensual", 0) * 12))
+            h = float(t.get("hasta_anual", t.get("hasta_mensual", 0) * 12))
+            db.execute("INSERT INTO isr_tramos (tasa, desde_anual, hasta_anual, descripcion) VALUES (?,?,?,?)",
+                (float(t["tasa"]), d, h, t.get("descripcion", "")))
+        else:
+            db.execute("INSERT INTO isr_tramos (tasa, desde_mensual, hasta_mensual, descripcion) VALUES (?,?,?,?)",
+                (float(t["tasa"]), float(t["desde_mensual"]), float(t["hasta_mensual"]), t.get("descripcion", "")))
     _recalcular_isr_todos(db)
+    db.commit()
     db.close()
     return jsonify({"ok": True})
 
@@ -411,6 +620,30 @@ def api_isr_calcular():
     sal = float(request.args.get("salario", 0))
     isr = _calcular_isr(sal)
     return jsonify({"salario": sal, "isr": isr})
+
+@app.route("/api/isr/tramos/reset", methods=["POST"])
+def api_isr_tramos_reset():
+    """Restablece la tabla ISR a los valores oficiales 2026 (referencia SH)."""
+    tramos_oficial_2026 = [
+        (0.0,   0.01,      228324.32, "Exentos"),
+        (15.0,  228324.33, 348154.10, "15%"),
+        (20.0,  348154.11, 809660.75, "20%"),
+        (25.0,  809660.76, 999999999.99, "25%"),
+    ]
+    db = get_db()
+    cols = {r[1] for r in db.execute("PRAGMA table_info(isr_tramos)").fetchall()}
+    use_anual = "desde_anual" in cols
+    db.execute("DELETE FROM isr_tramos")
+    for t in tramos_oficial_2026:
+        if use_anual:
+            db.execute("INSERT INTO isr_tramos (tasa, desde_anual, hasta_anual, descripcion) VALUES (?,?,?,?)", t)
+        else:
+            db.execute("INSERT INTO isr_tramos (tasa, desde_mensual, hasta_mensual, descripcion) VALUES (?,?,?,?)",
+                (t[0], t[1]/12, t[2]/12, t[3]))
+    _recalcular_isr_todos(db)
+    db.commit()
+    db.close()
+    return jsonify({"ok": True})
 
 @app.route("/api/isr/recalcular", methods=["POST"])
 def api_isr_recalcular():
@@ -456,31 +689,55 @@ def api_ihss_get():
     row = db.execute("SELECT * FROM ihss_config WHERE id=1").fetchone()
     db.close()
     if row:
-        return jsonify(dict(row))
-    else:
-        return jsonify({"tasa_em": 2.5, "tasa_ivm": 2.5, "techo_mensual": 12000.00})
+        d = dict(row)
+        d.setdefault("tasa_em", 2.5)
+        d.setdefault("tasa_ivm", 2.5)
+        d.setdefault("techo_mensual", 12000.00)
+        return jsonify(d)
+    return jsonify({"tasa_em": 2.5, "tasa_ivm": 2.5, "techo_mensual": 12000.00})
 
 @app.route("/api/ihss", methods=["POST"])
 def api_ihss_save():
     d = request.json
     db = get_db()
     db.execute("UPDATE ihss_config SET tasa_em=?, tasa_ivm=?, techo_mensual=? WHERE id=1",
-               (d["tasa_em"], d["tasa_ivm"], d["techo_mensual"]))
+               (d["tasa_em"], d.get("tasa_ivm", 2.5), d["techo_mensual"]))
     db.commit(); db.close()
     return jsonify({"ok": True})
 
 # ── API: ISR Config ─────────────────────────────────────────────
 @app.route("/api/calcular_isr")
 def api_calcular_isr():
-    """Calcula ISR mensual usando la tabla de tramos configurada."""
+    """Calcula ISR mensual usando la tabla de tramos. Soporta meses_trabajados segun fecha_ingreso."""
     salario = float(request.args.get("salario", 0))
     if salario <= 0: return jsonify({"isr_mensual": 0})
+    fecha_ingreso = request.args.get("fecha_ingreso", "").strip()
+    anio = int(request.args.get("anio", datetime.now().year))
+    meses = _meses_trabajados_en_anio(fecha_ingreso, anio) if fecha_ingreso else 12
     
     db = get_db()
-    isr_mensual = _calcular_isr(salario, db)
+    isr_mensual = _calcular_isr(salario, db, meses_trabajados=meses)
     db.close()
     
     return jsonify({"isr_mensual": isr_mensual})
+
+@app.route("/api/calcular_deducciones")
+def api_calcular_deducciones():
+    """Calcula ISR e IHSS para un empleado en un periodo (para preview de boleta)."""
+    salario = float(request.args.get("salario", 0))
+    if salario <= 0: return jsonify({"isr": 0, "ihss": 0, "salario_periodo": 0})
+    fecha_ingreso = request.args.get("fecha_ingreso", "").strip()
+    anio = int(request.args.get("anio", datetime.now().year))
+    mes = int(request.args.get("mes", datetime.now().month))
+    sal_periodo = _salario_prorrateado_primer_mes(salario, fecha_ingreso, anio, mes)
+    meses = _meses_trabajados_en_anio(fecha_ingreso, anio) if fecha_ingreso else 12
+    es_primer = _es_primer_mes_empleado(fecha_ingreso, anio, mes)
+    db = get_db()
+    sal_isr = sal_periodo if es_primer else None
+    isr = _calcular_isr(salario, db, meses_trabajados=meses, salario_periodo_actual=sal_isr)
+    ihss = _calcular_ihss(salario, db, salario_periodo_actual=sal_periodo)
+    db.close()
+    return jsonify({"isr": isr, "ihss": ihss, "salario_periodo": sal_periodo, "es_primer_mes": es_primer})
 
 # ── Logica: PDF ─────────────────────────────────────────────────
 CNI_BLUE = (35, 57, 129)
@@ -522,7 +779,7 @@ class BoletaPDF(FPDF):
         self.cell(0, 4, f"Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}  |  Pagina {self.page_no()}", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.set_font("Helvetica", "", 6)
         self.set_text_color(160, 160, 160)
-        self.cell(0, 4, "Sistema de Pagos CNI v2.1.0 - Consejo Nacional de Inversiones", align="C")
+        self.cell(0, 4, "Sistema de Pagos CNI v2.2.0 - Consejo Nacional de Inversiones", align="C")
 
     def section(self, text, is_income=False, is_deduction=False):
         if is_income:
@@ -555,12 +812,24 @@ class BoletaPDF(FPDF):
 def _generar_pdf(emp, fi, ff):
     n, cod, cargo = emp["nombre_empleado"], emp["cod_empleado"], emp["cargo"]
     sal = emp["salario_mensual"]
-    ihss = float(emp.get("ihss", 0) or 0)
-    isr = float(emp.get("isr", 0) or 0)
+    fecha_fin = datetime.strptime(ff, "%d/%m/%Y")
+    anio_periodo = fecha_fin.year
+    mes_periodo = fecha_fin.month
+    meses = _meses_trabajados_en_anio(emp.get("fecha_ingreso") or "", anio_periodo)
+    sal_periodo = _salario_prorrateado_primer_mes(sal, emp.get("fecha_ingreso") or "", anio_periodo, mes_periodo)
+    es_primer_mes = _es_primer_mes_empleado(emp.get("fecha_ingreso") or "", anio_periodo, mes_periodo)
+    db = get_db()
+    sal_isr = sal_periodo if es_primer_mes else None
+    isr = _calcular_isr(sal, db, meses_trabajados=meses, salario_periodo_actual=sal_isr)
+    ihss = _calcular_ihss(sal, db, salario_periodo_actual=sal_periodo)
+    db.close()
+    emp["salario_periodo"] = sal_periodo
+    emp["isr"] = isr
+    emp["ihss"] = ihss
     otro = float(emp.get("otro", 0) or 0)
     obs = emp.get("observacion_otro", "") or ""
     td = ihss + isr + otro
-    neto = sal - td
+    neto = sal_periodo - td
     fecha_fin = datetime.strptime(ff, "%d/%m/%Y")
     mes = MESES[fecha_fin.month - 1]
     anio = fecha_fin.year
@@ -586,7 +855,10 @@ def _generar_pdf(emp, fi, ff):
 
     # Ingresos
     pdf.section("INGRESOS", is_income=True)
-    pdf.row("Salario Mensual", fmt(sal))
+    if es_primer_mes and sal_periodo != sal:
+        pdf.row("Salario (prorrateado por dias trabajados)", fmt(sal_periodo))
+    else:
+        pdf.row("Salario Mensual", fmt(sal))
     pdf.ln(1)
     pdf.set_draw_color(*CNI_GREEN)
     pdf.line(15, pdf.get_y(), 195, pdf.get_y())
@@ -594,7 +866,7 @@ def _generar_pdf(emp, fi, ff):
     pdf.set_font("Helvetica", "B", 10)
     pdf.set_text_color(*CNI_GREEN)
     pdf.cell(125, 8, "   Total Ingresos")
-    pdf.cell(0, 8, fmt(sal), align="R", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.cell(0, 8, fmt(sal_periodo), align="R", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     pdf.ln(4)
 
     # Deducciones
@@ -675,7 +947,7 @@ def _generar_auditoria(rows, filtro=""):
     pdf.ln(4)
     pdf.set_font("Helvetica", "", 7)
     pdf.set_text_color(120, 120, 120)
-    pdf.cell(0, 5, f"Total registros: {len(rows)}  |  Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}  |  Sistema de Pagos CNI v2.1.0", align="C")
+    pdf.cell(0, 5, f"Total registros: {len(rows)}  |  Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}  |  Sistema de Pagos CNI v2.2.0", align="C")
 
     pdf.output(ruta)
     return ruta
@@ -687,7 +959,8 @@ def _enviar_email(smtp_cfg, emp, fi, ff, ruta_pdf):
     if not srv or not usr or not pwd: raise ValueError("Configure SMTP primero.")
     dest = emp["correo_institucional"]
     if not dest: raise ValueError(f"{emp['nombre_empleado']} no tiene correo.")
-    sal=emp["salario_mensual"]; ihss=float(emp.get("ihss",0) or 0)
+    sal=emp.get("salario_periodo") or emp["salario_mensual"]
+    ihss=float(emp.get("ihss",0) or 0)
     isr=float(emp.get("isr",0) or 0); otro=float(emp.get("otro",0) or 0)
     obs=emp.get("observacion_otro","") or ""; td=ihss+isr+otro; neto=sal-td
     otro_row=""
@@ -727,7 +1000,7 @@ def _enviar_email(smtp_cfg, emp, fi, ff, ruta_pdf):
         <td style="padding:12px 16px;color:#ffffff;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;text-align:right">Monto (L.)</td>
       </tr>
       <tr>
-        <td style="padding:12px 16px;background-color:#ffffff;border-bottom:1px solid #eeeeee;color:#333333;font-weight:600">Salario Mensual</td>
+        <td style="padding:12px 16px;background-color:#ffffff;border-bottom:1px solid #eeeeee;color:#333333;font-weight:600">{'Salario (prorrateado por dias)' if sal != emp.get('salario_mensual', sal) else 'Salario Mensual'}</td>
         <td style="padding:12px 16px;background-color:#ffffff;border-bottom:1px solid #eeeeee;color:#333333;font-weight:700;text-align:right;font-size:15px">{fmt(sal)}</td>
       </tr>
       <tr>
@@ -782,7 +1055,8 @@ def _enviar_email(smtp_cfg, emp, fi, ff, ruta_pdf):
     server.login(usr,pwd); server.sendmail(usr,dest,msg.as_string()); server.quit()
 
 def _registrar_pago(db, emp, fi, ff, tipo, ruta):
-    sal=emp["salario_mensual"]; ihss=float(emp.get("ihss",0) or 0)
+    sal=emp.get("salario_periodo") or emp["salario_mensual"]
+    ihss=float(emp.get("ihss",0) or 0)
     isr=float(emp.get("isr",0) or 0); otro=float(emp.get("otro",0) or 0)
     obs=emp.get("observacion_otro","") or ""; td=ihss+isr+otro; neto=sal-td
     dt=datetime.strptime(ff,"%d/%m/%Y"); pk=f"{emp['cod_empleado']}_{dt.month:02d}_{dt.year}"

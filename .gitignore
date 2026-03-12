@@ -62,3 +62,7 @@ desktop.ini
 # Backups
 *.bak
 *.backup
+
+# Paquetes de distribución (subir a Releases de GitHub)
+SistemaPagosCNI_*.tar.gz
+SistemaPagosCNI_*.zip

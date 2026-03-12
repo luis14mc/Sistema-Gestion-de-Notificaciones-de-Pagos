@@ -5,7 +5,7 @@ Consejo Nacional de Inversiones - Honduras
 
 Desarrollado por: Ing. Luis Martinez
 Email: luismartinez.94mc@gmail.com
-Version: 2.1.0
+Version: 2.2.0
 """
 
 import os

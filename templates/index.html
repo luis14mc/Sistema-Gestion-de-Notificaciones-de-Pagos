@@ -277,6 +277,11 @@ nav .nav-item.active svg {
             <div><label class="block text-xs font-semibold text-slate-500 mb-2">Cargo <span class="text-red-400">*</span></label><input id="f-cargo" placeholder="Puesto" class="input-field"></div>
             <div><label class="block text-xs font-semibold text-slate-500 mb-2">Salario Mensual (L.) <span class="text-red-400">*</span></label><input id="f-sal" type="number" step="0.01" placeholder="0.00" class="input-field" oninput="updateFormISR()"></div>
           </div>
+          <div class="mb-6">
+            <label class="block text-xs font-semibold text-slate-500 mb-2">Fecha de Ingreso Laboral</label>
+            <input id="f-fecha-ingreso" type="date" class="input-field max-w-[200px]" onchange="updateFormISR()">
+            <p class="text-[10px] text-slate-400 mt-1">Si ingresa a mitad de mes: salario primer mes = (Salario/30) × dias trabajados. ISR e IHSS se calculan con ese salario prorrateado.</p>
+          </div>
           <!-- Deductions section -->
           <div class="flex items-center gap-2 mb-5 pb-4 border-b border-slate-100">
             <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -506,6 +511,37 @@ nav .nav-item.active svg {
         <p class="text-sm text-slate-500 mt-1">Tabla ISR progresiva y servidor de correo</p>
       </div>
 
+      <!-- ── ISR DEDUCCIONES ── -->
+      <div class="bg-white rounded-2xl border border-slate-200/60 p-7 shadow-sm mb-6 max-w-3xl">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-800">Deducciones ISR (Anuales)</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Gastos medicos y deducible IVM para Renta Neta Gravable</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-xl p-4 mb-5">
+          <div class="text-xs text-amber-800 leading-relaxed">
+            <p class="font-bold mb-1">Formula: Renta Neta Gravable = Ingreso Anual - (Gastos Medicos + Deducible IVM x 12)</p>
+            <p>El ISR se aplica sobre la Renta Neta Gravable con la tabla progresiva anual.</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-5 mb-5">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-2">Gastos Medicos (L./anual)</label>
+            <input id="isr-gastos-medicos" type="number" step="0.01" placeholder="40000" class="input-field">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-2">Deducible IVM (L./mensual)</label>
+            <input id="isr-deducible-ivm" type="number" step="0.01" placeholder="297.58" class="input-field">
+            <p class="text-[10px] text-slate-400 mt-1">Se multiplica x 12 para el calculo anual</p>
+          </div>
+        </div>
+        <button onclick="saveISRDeducciones()" class="btn bg-amber-600 hover:bg-amber-700 text-white !h-9 !text-xs shadow-sm">Guardar Deducciones</button>
+      </div>
+
       <!-- ── ISR TABLE ── -->
       <div class="bg-white rounded-2xl border border-slate-200/60 p-7 shadow-sm mb-6">
         <div class="flex items-center justify-between mb-5">
@@ -514,8 +550,8 @@ nav .nav-item.active svg {
               <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 002.25 2.25h10.5a2.25 2.25 0 002.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0012 2.25z"/></svg>
             </div>
             <div>
-              <h3 class="text-base font-bold text-slate-800">Tabla Progresiva ISR 2026</h3>
-              <p class="text-xs text-slate-500 mt-0.5">Impuesto Sobre la Renta — Tramos mensuales</p>
+              <h3 class="text-base font-bold text-slate-800">Tabla Progresiva ISR 2026 (Anual)</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Impuesto Sobre la Renta — Rangos anuales en Lempiras</p>
             </div>
           </div>
           <button onclick="addTramo()" class="btn bg-teal-600 hover:bg-teal-700 text-white !h-9 !text-xs shadow-sm">
@@ -530,8 +566,8 @@ nav .nav-item.active svg {
             <thead>
               <tr class="bg-gradient-to-r from-teal-500 to-teal-600 text-white">
                 <th class="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-wider">Tasa %</th>
-                <th class="px-5 py-3 text-right text-[11px] font-bold uppercase tracking-wider">Desde (Mensual)</th>
-                <th class="px-5 py-3 text-right text-[11px] font-bold uppercase tracking-wider">Hasta (Mensual)</th>
+                <th class="px-5 py-3 text-right text-[11px] font-bold uppercase tracking-wider">Desde (Anual L.)</th>
+                <th class="px-5 py-3 text-right text-[11px] font-bold uppercase tracking-wider">Hasta (Anual L.)</th>
                 <th class="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-wider">Descripcion</th>
                 <th class="px-5 py-3 text-center text-[11px] font-bold uppercase tracking-wider w-20">Accion</th>
               </tr>
@@ -549,9 +585,10 @@ nav .nav-item.active svg {
           <span id="isr-test-result" class="text-sm font-bold text-teal-600">L. 0.00</span>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 flex-wrap">
           <button onclick="saveISRTramos()" class="btn bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/25 !px-8">Guardar Tabla ISR</button>
           <button onclick="recalcularTodos()" class="btn bg-white border-2 border-teal-200 text-teal-700 hover:bg-teal-50">Recalcular Todos los Empleados</button>
+          <button onclick="resetISROficial2026()" class="btn bg-slate-100 border border-slate-300 text-slate-600 hover:bg-slate-200 text-xs">Restablecer tabla oficial 2026</button>
         </div>
       </div>
 
@@ -570,29 +607,30 @@ nav .nav-item.active svg {
         <div class="flex items-start gap-3 bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-6">
           <svg class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
           <div class="text-xs text-emerald-700 leading-relaxed">
-            <p class="font-bold mb-1">Fórmula de cálculo IHSS:</p>
-            <p><strong>Salario Base</strong> = Mín(Salario Real, Techo de Cotización)</p>
-            <p><strong>IHSS Total Empleado</strong> = Salario Base × (Tasa EM + Tasa IVM)</p>
+            <p class="font-bold mb-1">Formula de calculo IHSS (EM + IVM):</p>
+            <p><strong>Salario Base</strong> = Min(Salario Real, Techo de Cotizacion)</p>
+            <p><strong>IHSS Total</strong> = Salario Base x (Tasa EM + Tasa IVM)</p>
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-5 mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
           <div>
             <label class="block text-xs font-semibold text-slate-500 mb-2">Tasa EM - Empleado (%)</label>
-            <input id="ihss-em" type="number" step="0.01" placeholder="2.5" class="input-field">
+            <input id="ihss-em" type="number" step="0.01" placeholder="2.5" class="input-field w-full">
             <p class="text-[10px] text-slate-400 mt-1">Enfermedad y Maternidad</p>
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-500 mb-2">Tasa IVM - Empleado (%)</label>
-            <input id="ihss-ivm" type="number" step="0.01" placeholder="2.5" class="input-field">
+            <input id="ihss-ivm" type="number" step="0.01" placeholder="2.5" class="input-field w-full">
             <p class="text-[10px] text-slate-400 mt-1">Invalidez, Vejez y Muerte</p>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-2">Techo de Cotización (L.)</label>
-            <input id="ihss-techo" type="number" step="0.01" placeholder="12000.00" class="input-field">
-            <p class="text-[10px] text-slate-400 mt-1">Mensual 2026</p>
+            <label class="block text-xs font-semibold text-slate-500 mb-2">Techo de Cotizacion (L./mensual)</label>
+            <input id="ihss-techo" type="number" step="0.01" placeholder="12000.00" class="input-field w-full">
+            <p class="text-[10px] text-slate-400 mt-1">Salario maximo sobre el cual se calcula</p>
           </div>
         </div>
+        <p id="ihss-resumen" class="text-xs text-emerald-600 font-medium mb-4">Tasa total: EM + IVM = 5%</p>
 
         <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-4 mb-6">
           <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5z"/></svg>
@@ -790,7 +828,7 @@ async function loadEmpleados(){
 function selectEmp(id,tr){selectedEmpId=id;document.querySelectorAll('#tb-emp tr').forEach(r=>r.classList.remove('row-selected'));tr.classList.add('row-selected')}
 async function showForm(){
   editingId=null;document.getElementById('form-title').textContent='Nuevo Empleado';
-  ['f-cod','f-nombre','f-cargo','f-sal','f-obs','f-correo'].forEach(id=>document.getElementById(id).value='');
+  ['f-cod','f-nombre','f-cargo','f-sal','f-obs','f-correo','f-fecha-ingreso'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-otro').value='0';
   document.getElementById('f-ihss-display').textContent='L. 0.00';
   document.getElementById('f-isr-display').textContent='L. 0.00';
@@ -814,14 +852,18 @@ async function editEmp(id){
   document.getElementById('f-isr-display').textContent=F(e.isr||0);
   document.getElementById('f-otro').value=e.otro||0;document.getElementById('f-obs').value=e.observacion_otro||'';
   document.getElementById('f-correo').value=e.correo_institucional||'';
+  const fi=e.fecha_ingreso||'';
+  document.getElementById('f-fecha-ingreso').value=fi?(fi.includes('/')?(p=>p[2]+'-'+p[1]+'-'+p[0])(fi.split('/')):fi):'';
   document.getElementById('personal-list').style.display='none';document.getElementById('personal-form').style.display='block';
 }
 async function saveEmpleado(){
+  const fiVal=document.getElementById('f-fecha-ingreso').value;
   const d={
     cod_empleado:document.getElementById('f-cod').value.trim(),
     nombre_empleado:document.getElementById('f-nombre').value.trim(),
     cargo:document.getElementById('f-cargo').value.trim(),
     salario_mensual:document.getElementById('f-sal').value,
+    fecha_ingreso:fiVal||'',
     ihss: document.getElementById('f-ihss-display').textContent.replace('L. ','').replace(/,/g,'') || 0,
     isr: document.getElementById('f-isr-display').textContent.replace('L. ','').replace(/,/g,'') || 0,
     otro:document.getElementById('f-otro').value||0,
@@ -855,15 +897,22 @@ async function loadBoletaEmps(){
   }
 }
 async function onBoletaEmp(){const id=document.getElementById('b-emp').value;if(id)boletaEmp=await(await fetch('/api/empleados/'+id)).json()}
-function previewBoleta(){
+async function previewBoleta(){
   const e=boletaEmp;if(!e)return Swal.fire({icon:'info',title:'Sin Seleccion',text:'Seleccione un empleado.',confirmButtonColor:'#2563eb'});
   const mesVal=document.getElementById('b-mes').value;
   if(!mesVal)return Swal.fire({icon:'warning',title:'Mes Requerido',text:'Seleccione el mes de pago.',confirmButtonColor:'#2563eb'});
   const fechas=mesAFechas(mesVal);
   const fi=fechas.fi, ff=fechas.ff;
-  
-  const sal=e.salario_mensual,ihss=e.ihss||0,isr=e.isr||0,otro=e.otro||0,obs=e.observacion_otro||'';
-  const td=ihss+isr+otro,neto=sal-td;
+  const [anio, mes]=mesVal.split('-').map(Number);
+  const fechaIng=e.fecha_ingreso||'';
+  let ihss=e.ihss||0, isr=e.isr||0, salPeriodo=e.salario_mensual, esPrimerMes=false;
+  try {
+    const r=await fetch('/api/calcular_deducciones?salario='+e.salario_mensual+'&fecha_ingreso='+encodeURIComponent(fechaIng)+'&anio='+anio+'&mes='+mes);
+    const d=await r.json();
+    isr=d.isr||0; ihss=d.ihss||0; salPeriodo=d.salario_periodo??e.salario_mensual; esPrimerMes=d.es_primer_mes||false;
+  } catch(err){ console.warn('Usando valores guardados:', err); }
+  const otro=e.otro||0,obs=e.observacion_otro||'';
+  const td=ihss+isr+otro,neto=salPeriodo-td;
   let otroRow=otro>0?`<div class="flex justify-between py-2 border-b border-red-100"><span class="text-[13px] text-slate-600">${obs?'Otro ('+obs+')':'Otra Deduccion'}</span><span class="text-[13px] font-semibold text-red-500">-${F(otro)}</span></div>`:'';
   document.getElementById('boleta-preview').innerHTML=`
     <div class="max-w-lg mx-auto space-y-4">
@@ -873,7 +922,7 @@ function previewBoleta(){
       </div>
       <div class="bg-cni-green/10 border border-cni-green/20 rounded-xl p-5">
         <p class="text-[10px] font-bold text-cni-green uppercase tracking-[0.15em] mb-3">Ingresos</p>
-        <div class="flex justify-between items-center"><span class="text-sm font-medium text-slate-700">Salario Mensual</span><span class="text-xl font-extrabold text-cni-green">${F(sal)}</span></div>
+        <div class="flex justify-between items-center"><span class="text-sm font-medium text-slate-700">${esPrimerMes?'Salario (prorrateado por dias trabajados)':'Salario Mensual'}</span><span class="text-xl font-extrabold text-cni-green">${F(salPeriodo)}</span></div>
       </div>
       <div class="bg-red-50 border border-red-200 rounded-xl p-5">
         <p class="text-[10px] font-bold text-red-400 uppercase tracking-[0.15em] mb-3">Deducciones</p>
@@ -1081,14 +1130,28 @@ async function exportarAuditoria(){
 async function loadIsrConfig(){
   isrTramos=await(await fetch('/api/isr/tramos')).json();
   renderISRTable();
+  const cfg=await(await fetch('/api/isr/config')).json();
+  document.getElementById('isr-gastos-medicos').value=cfg.gastos_medicos_anual??40000;
+  document.getElementById('isr-deducible-ivm').value=cfg.deducible_ivm_mensual??297.58;
+}
+async function saveISRDeducciones(){
+  const gastos=parseFloat(document.getElementById('isr-gastos-medicos').value)||40000;
+  const ivm=parseFloat(document.getElementById('isr-deducible-ivm').value)||297.58;
+  Swal.fire({title:'Guardando...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+  const r=await fetch('/api/isr/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gastos_medicos_anual:gastos,deducible_ivm_mensual:ivm})});
+  const res=await r.json();Swal.close();
+  if(res.ok) Swal.fire({icon:'success',title:'Deducciones Guardadas',html:'<p class="text-sm text-slate-500">Usa "Recalcular Todos los Empleados" para actualizar el ISR.</p>',confirmButtonColor:'#0d9488'});
+  else Swal.fire({icon:'error',title:'Error',text:res.error,confirmButtonColor:'#0d9488'});
 }
 function renderISRTable(){
   document.getElementById('tb-isr').innerHTML=isrTramos.map((t,i)=>{
-    const esUltimo=t.hasta_mensual>=99999999;
+    const hasta=t.hasta_anual??t.hasta_mensual;
+    const desde=t.desde_anual??t.desde_mensual;
+    const esUltimo=hasta>=99999999;
     return `<tr class="hover:bg-teal-50/30 transition-colors">
       <td class="px-5 py-3"><span class="inline-flex items-center px-3 py-1 rounded-lg ${t.tasa===0?'bg-emerald-50 text-emerald-700':'bg-teal-50 text-teal-700'} text-xs font-bold">${t.tasa===0?'Exento':t.tasa+'%'}</span></td>
-      <td class="px-5 py-3 text-right font-medium text-slate-700">${F(t.desde_mensual)}</td>
-      <td class="px-5 py-3 text-right font-medium text-slate-700">${esUltimo?'<span class="text-slate-400 italic">en adelante</span>':F(t.hasta_mensual)}</td>
+      <td class="px-5 py-3 text-right font-medium text-slate-700">${F(desde)}</td>
+      <td class="px-5 py-3 text-right font-medium text-slate-700">${esUltimo?'<span class="text-slate-400 italic">en adelante</span>':F(hasta)}</td>
       <td class="px-5 py-3 text-slate-500">${t.descripcion||''}</td>
       <td class="px-5 py-3 text-center">
         <div class="flex items-center justify-center gap-1">
@@ -1103,29 +1166,31 @@ function renderISRTable(){
     </tr>`}).join('');
 }
 async function addTramo(){
-  const{value:form}=await Swal.fire({title:'Nuevo Tramo ISR',html:`
+  const{value:form}=await Swal.fire({title:'Nuevo Tramo ISR (Anual)',html:`
     <div class="text-left space-y-3">
       <div><label class="block text-xs font-semibold text-slate-500 mb-1">Tasa (%)</label><input id="swal-tasa" type="number" step="0.01" placeholder="15" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
-      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Desde Mensual (L.)</label><input id="swal-desde" type="number" step="0.01" placeholder="0.01" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
-      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Hasta Mensual (L.)</label><input id="swal-hasta" type="number" step="0.01" placeholder="22360.36" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Desde Anual (L.)</label><input id="swal-desde" type="number" step="0.01" placeholder="268324.32" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Hasta Anual (L.)</label><input id="swal-hasta" type="number" step="0.01" placeholder="388154.16" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
       <div><label class="block text-xs font-semibold text-slate-500 mb-1">Descripcion</label><input id="swal-desc" placeholder="Ej: Exento, 15%, 20%..." class="swal2-input !text-sm" style="margin:0;width:100%"></div>
     </div>`,focusConfirm:false,showCancelButton:true,confirmButtonColor:'#0d9488',cancelButtonColor:'#64748b',confirmButtonText:'Agregar',cancelButtonText:'Cancelar',
-    preConfirm:()=>({tasa:parseFloat(document.getElementById('swal-tasa').value)||0,desde_mensual:parseFloat(document.getElementById('swal-desde').value)||0,hasta_mensual:parseFloat(document.getElementById('swal-hasta').value)||0,descripcion:document.getElementById('swal-desc').value})
+    preConfirm:()=>({tasa:parseFloat(document.getElementById('swal-tasa').value)||0,desde_anual:parseFloat(document.getElementById('swal-desde').value)||0,hasta_anual:parseFloat(document.getElementById('swal-hasta').value)||0,descripcion:document.getElementById('swal-desc').value})
   });
-  if(form){isrTramos.push(form);isrTramos.sort((a,b)=>a.desde_mensual-b.desde_mensual);renderISRTable()}
+  if(form){isrTramos.push(form);isrTramos.sort((a,b)=>(a.desde_anual??a.desde_mensual)-(b.desde_anual??b.desde_mensual));renderISRTable()}
 }
 async function editTramo(idx){
   const t=isrTramos[idx];
-  const{value:form}=await Swal.fire({title:'Editar Tramo ISR',html:`
+  const desde=t.desde_anual??t.desde_mensual;
+  const hasta=t.hasta_anual??t.hasta_mensual;
+  const{value:form}=await Swal.fire({title:'Editar Tramo ISR (Anual)',html:`
     <div class="text-left space-y-3">
       <div><label class="block text-xs font-semibold text-slate-500 mb-1">Tasa (%)</label><input id="swal-tasa" type="number" step="0.01" value="${t.tasa}" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
-      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Desde Mensual (L.)</label><input id="swal-desde" type="number" step="0.01" value="${t.desde_mensual}" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
-      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Hasta Mensual (L.)</label><input id="swal-hasta" type="number" step="0.01" value="${t.hasta_mensual}" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Desde Anual (L.)</label><input id="swal-desde" type="number" step="0.01" value="${desde}" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
+      <div><label class="block text-xs font-semibold text-slate-500 mb-1">Hasta Anual (L.)</label><input id="swal-hasta" type="number" step="0.01" value="${hasta}" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
       <div><label class="block text-xs font-semibold text-slate-500 mb-1">Descripcion</label><input id="swal-desc" value="${t.descripcion||''}" class="swal2-input !text-sm" style="margin:0;width:100%"></div>
     </div>`,focusConfirm:false,showCancelButton:true,confirmButtonColor:'#0d9488',cancelButtonColor:'#64748b',confirmButtonText:'Guardar',cancelButtonText:'Cancelar',
-    preConfirm:()=>({tasa:parseFloat(document.getElementById('swal-tasa').value)||0,desde_mensual:parseFloat(document.getElementById('swal-desde').value)||0,hasta_mensual:parseFloat(document.getElementById('swal-hasta').value)||0,descripcion:document.getElementById('swal-desc').value})
+    preConfirm:()=>({tasa:parseFloat(document.getElementById('swal-tasa').value)||0,desde_anual:parseFloat(document.getElementById('swal-desde').value)||0,hasta_anual:parseFloat(document.getElementById('swal-hasta').value)||0,descripcion:document.getElementById('swal-desc').value})
   });
-  if(form){isrTramos[idx]=form;isrTramos.sort((a,b)=>a.desde_mensual-b.desde_mensual);renderISRTable()}
+  if(form){isrTramos[idx]=form;isrTramos.sort((a,b)=>(a.desde_anual??a.desde_mensual)-(b.desde_anual??b.desde_mensual));renderISRTable()}
 }
 function deleteTramo(idx){isrTramos.splice(idx,1);renderISRTable()}
 async function saveISRTramos(){
@@ -1144,6 +1209,15 @@ async function recalcularTodos(){
   Swal.close();
   Swal.fire({icon:'success',title:'ISR Recalculado',text:'Todos los empleados fueron actualizados.',timer:1500,showConfirmButton:false});
 }
+async function resetISROficial2026(){
+  const res=await Swal.fire({icon:'question',title:'Restablecer tabla oficial 2026',html:'<p class="text-sm text-slate-600">Se reemplazara la tabla actual por la tabla progresiva oficial de Renta Neta Gravable anual (referencia SH). Se recalculara el ISR de todos los empleados.</p><p class="text-xs text-slate-500 mt-2">Exentos: 0.01-228,324.32 | 15%: 228,324.33-348,154.10 | 20%: 348,154.11-809,660.75 | 25%: 809,660.76+</p>',showCancelButton:true,confirmButtonColor:'#0d9488',cancelButtonColor:'#64748b',confirmButtonText:'Restablecer',cancelButtonText:'Cancelar'});
+  if(!res.isConfirmed)return;
+  Swal.fire({title:'Restableciendo...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+  const r=await fetch('/api/isr/tramos/reset',{method:'POST'});
+  const data=await r.json();Swal.close();
+  if(data.ok){loadIsrConfig();Swal.fire({icon:'success',title:'Tabla oficial 2026 restablecida',text:'Se recalculo el ISR de todos los empleados.',confirmButtonColor:'#0d9488'});}
+  else Swal.fire({icon:'error',title:'Error',text:data.error||'No se pudo restablecer',confirmButtonColor:'#0d9488'});
+}
 async function testISR(){
   const sal=parseFloat(document.getElementById('isr-test-sal').value)||0;
   if(sal<=0){document.getElementById('isr-test-result').textContent='L. 0.00';return}
@@ -1152,7 +1226,7 @@ async function testISR(){
   document.getElementById('isr-test-result').textContent=F(d.isr_mensual);
 }
 
-// Calcular ISR e IHSS automaticamente en el formulario de empleado
+// Calcular ISR e IHSS automaticamente en el formulario (aplica reglas por fecha_ingreso)
 async function updateFormISR(){
   const sal=parseFloat(document.getElementById('f-sal').value)||0;
   if(sal<=0){
@@ -1161,19 +1235,13 @@ async function updateFormISR(){
     return;
   }
   try {
-    // Calcular ISR
-    const r_isr=await fetch('/api/calcular_isr?salario='+sal);
-    const d_isr=await r_isr.json();
-    document.getElementById('f-isr-display').textContent=F(d_isr.isr_mensual);
-    
-    // Calcular IHSS
-    const r_ihss=await fetch('/api/ihss');
-    const config=await r_ihss.json();
-    const techo=config.techo_mensual||12000;
-    const tasa_total=(config.tasa_em||2.5)+(config.tasa_ivm||2.5);
-    const salarioBase=Math.min(sal,techo);
-    const ihss=salarioBase*tasa_total/100;
-    document.getElementById('f-ihss-display').textContent=F(ihss);
+    const fiVal=document.getElementById('f-fecha-ingreso').value||'';
+    const now=new Date();
+    const anio=now.getFullYear(), mes=now.getMonth()+1;
+    const r=await fetch('/api/calcular_deducciones?salario='+sal+'&fecha_ingreso='+encodeURIComponent(fiVal)+'&anio='+anio+'&mes='+mes);
+    const d=await r.json();
+    document.getElementById('f-isr-display').textContent=F(d.isr||0);
+    document.getElementById('f-ihss-display').textContent=F(d.ihss||0);
   } catch(e) {
     console.error('Error calculando ISR/IHSS:', e);
     document.getElementById('f-isr-display').textContent='L. 0.00';
@@ -1182,13 +1250,27 @@ async function updateFormISR(){
 }
 
 // ── IHSS ──
+function actualizarResumenIHSS(){
+  const el=document.getElementById('ihss-resumen');
+  if(!el)return;
+  const em=parseFloat(document.getElementById('ihss-em')?.value)||2.5;
+  const ivm=parseFloat(document.getElementById('ihss-ivm')?.value)||2.5;
+  el.textContent='Tasa total: EM + IVM = '+(em+ivm).toFixed(1)+'%';
+}
 async function loadIHSSConfig(){
   try {
     const r=await fetch('/api/ihss');
     const d=await r.json();
-    document.getElementById('ihss-em').value=d.tasa_em||2.5;
-    document.getElementById('ihss-ivm').value=d.tasa_ivm||2.5;
-    document.getElementById('ihss-techo').value=d.techo_mensual||12000;
+    const tasaEm = d.tasa_em != null ? d.tasa_em : 2.5;
+    const tasaIvm = d.tasa_ivm != null ? d.tasa_ivm : 2.5;
+    const techo = d.techo_mensual != null ? d.techo_mensual : 12000;
+    const elEm = document.getElementById('ihss-em');
+    const elIvm = document.getElementById('ihss-ivm');
+    const elTecho = document.getElementById('ihss-techo');
+    if(elEm){ elEm.value = tasaEm; elEm.oninput=actualizarResumenIHSS; }
+    if(elIvm){ elIvm.value = tasaIvm; elIvm.oninput=actualizarResumenIHSS; }
+    if(elTecho) elTecho.value = techo;
+    actualizarResumenIHSS();
   } catch(e) {
     console.error('Error cargando IHSS:', e);
   }
@@ -1197,11 +1279,11 @@ async function loadIHSSConfig(){
 async function saveIHSSConfig(){
   const d={
     tasa_em: parseFloat(document.getElementById('ihss-em').value)||0,
-    tasa_ivm: parseFloat(document.getElementById('ihss-ivm').value)||0,
+    tasa_ivm: parseFloat(document.getElementById('ihss-ivm').value)||2.5,
     techo_mensual: parseFloat(document.getElementById('ihss-techo').value)||0
   };
-  if(d.tasa_em<=0||d.tasa_ivm<=0||d.techo_mensual<=0){
-    return Swal.fire({icon:'warning',title:'Datos incompletos',text:'Todos los campos son requeridos.',confirmButtonColor:'#1BAE64'});
+  if(d.tasa_em<0||d.techo_mensual<=0){
+    return Swal.fire({icon:'warning',title:'Datos incompletos',text:'Tasa EM (y Techo) son requeridos.',confirmButtonColor:'#1BAE64'});
   }
   try {
     const r=await fetch('/api/ihss',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
@@ -1223,7 +1305,6 @@ async function testIHSS(){
   const tasa_em=parseFloat(document.getElementById('ihss-em').value)||2.5;
   const tasa_ivm=parseFloat(document.getElementById('ihss-ivm').value)||2.5;
   const techo=parseFloat(document.getElementById('ihss-techo').value)||12000;
-  
   const salarioBase=Math.min(sal,techo);
   const ihss_total=salarioBase*(tasa_em+tasa_ivm)/100;
   document.getElementById('ihss-test-result').textContent=F(ihss_total);

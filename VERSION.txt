@@ -1,10 +1,10 @@
 Sistema de Pagos CNI
 Consejo Nacional de Inversiones - Honduras
 
-VERSION: 2.1.0
-FECHA: 16 de Febrero 2026
+VERSION: 2.2.0
+FECHA: 12 de Marzo 2026
 ESTADO: Produccion
-BUILD: 2026.02.16
+BUILD: 2026.03.12
 
 DESARROLLADOR: Ing. Luis Martinez
 EMAIL: luismartinez.94mc@gmail.com
@@ -14,7 +14,15 @@ SOPORTE CNI:
 Oficial de TI
 Email: amartinez@cni.hn
 
-ULTIMA ACTUALIZACION: 16/02/2026
+ULTIMA ACTUALIZACION: 12/03/2026
+
+CAMBIOS v2.2.0:
+- Salario prorrateado primer mes: (Salario/30) x dias trabajados segun fecha ingreso
+- ISR con ingreso anual = salario primer mes + (salario x (meses-1)); deducciones por meses
+- IHSS calculado sobre salario efectivo del periodo (prorrateado en primer mes)
+- Reglas especiales aplicadas al crear/editar empleado y al recalcular
+- IVM en configuracion IHSS (EM + IVM)
+- Fecha de ingreso laboral en formulario de empleados
 
 CAMBIOS v2.1.0:
 - Selector de mes en Boleta (periodo del 20 al 20 automatico)
