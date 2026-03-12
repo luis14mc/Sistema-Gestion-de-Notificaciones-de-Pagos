@@ -3,7 +3,7 @@
 **Sistema de Gestión de Recursos Humanos y Nómina**  
 Consejo Nacional de Inversiones - Honduras
 
-![Version](https://img.shields.io/badge/version-2.1.0-blue)
+![Version](https://img.shields.io/badge/version-2.2.0-blue)
 ![Release](https://img.shields.io/badge/release-Feb_2026-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.8+-green)
 ![Flask](https://img.shields.io/badge/flask-3.0-red)
@@ -21,8 +21,8 @@ Sistema integral para la gestión de recursos humanos, nómina y generación de 
 - **Gestión de Personal**: CRUD completo de empleados con cálculos automáticos
 - **Boletas de Pago**: Generación individual y masiva con exportación a PDF
 - **Cálculos Automáticos**: 
-  - ISR (Impuesto Sobre la Renta) con tabla progresiva configurable
-  - IHSS (Instituto Hondureño de Seguridad Social) con tasas configurables
+  - ISR (Impuesto Sobre la Renta) con tabla progresiva, prorrateo por fecha de ingreso
+  - IHSS (EM + IVM) con tasas configurables, prorrateado en primer mes
 - **Histórico de Pagos**: Registro completo con reportes de auditoría
 - **Envío por Email**: Distribución automática de boletas vía Office 365
 - **Interfaz Moderna**: Diseño responsive con colores institucionales CNI
@@ -35,12 +35,9 @@ Sistema integral para la gestión de recursos humanos, nómina y generación de 
 
 **Descarga el ejecutable para Windows:**
 
-- **Windows:** `SistemaPagosCNI_v2.1.0_Windows.zip` (~150-200 MB)
-  - Ver guía de compilación: [`COMPILAR_WINDOWS.md`](COMPILAR_WINDOWS.md)
+- **Windows:** `SistemaPagosCNI_v2.2.0_Windows.zip` (~150-200 MB) — [Releases](https://github.com/luis14mc/Sistema-Gestion-de-Notificaciones-de-Pagos/releases)
 
-**Instrucciones de instalación:** Ver [`INSTALACION.md`](INSTALACION.md)
-
-**Nota:** El sistema está diseñado para Windows. La compilación debe hacerse en Windows nativo (no en WSL).
+**Instrucciones:** Extraer el ZIP, ejecutar `SistemaPagosCNI.exe`. El sistema está diseñado para Windows.
 
 ### Opción 2: Instalación desde Código Fuente (Para Desarrolladores)
 
@@ -78,25 +75,16 @@ python app.py
 
 ---
 
-## 📦 Compilar Ejecutable
+## 📦 Compilar Ejecutable (Windows)
 
-Para desarrolladores que desean compilar el ejecutable:
-
-**⚠️ IMPORTANTE:** Debes compilar en Windows nativo para crear el `.exe`
-
-**Ver guía completa:** [`COMPILAR_WINDOWS.md`](COMPILAR_WINDOWS.md)
-
-**Compilación rápida en Windows:**
+**⚠️ Debes compilar en Windows nativo** (no WSL) para crear el `.exe`:
 
 ```cmd
-REM En PowerShell o CMD (Windows nativo, NO WSL)
-python -m venv venv_windows
-venv_windows\Scripts\activate
 pip install -r requirements.txt
 build.bat
 ```
 
-El ejecutable se generará en `dist\SistemaPagosCNI\SistemaPagosCNI.exe`
+El ejecutable se genera en `dist\SistemaPagosCNI\SistemaPagosCNI.exe`. Para distribuir, comprimir esa carpeta en `SistemaPagosCNI_v2.2.0_Windows.zip`.
 
 ---
 
@@ -107,19 +95,6 @@ El ejecutable se generará en `dist\SistemaPagosCNI\SistemaPagosCNI.exe`
 3. **Revisar Tabla ISR**: Verificar/ajustar tramos de impuesto sobre la renta
 4. **Agregar Empleados**: Ir a Personal → Nuevo Empleado
 5. **Generar Boletas**: Seleccionar empleado, establecer período y generar
-
----
-
-## 📚 Documentación
-
-- **[Instalación](INSTALACION.md)**: Guía completa de instalación para usuarios finales
-- **[Manual de Usuario](MANUAL_USUARIO.md)**: Guía detallada paso a paso
-- **[Manual Técnico](MANUAL_TECNICO.md)**: Arquitectura, APIs y desarrollo
-- **[Compilación Windows](COMPILAR_WINDOWS.md)**: ⚠️ Crear ejecutable .exe para Windows
-- **[Compilación General](INSTRUCCIONES_BUILD.md)**: Información general de build
-- **[GitHub](INSTRUCCIONES_PUSH_GITHUB.md)**: Instrucciones para push al repositorio
-- **[Inicio Rápido](INICIO_RAPIDO.md)**: Guía rápida para empezar
-- **[Resumen de Entrega](RESUMEN_ENTREGA.md)**: Checklist completo del proyecto
 
 ---
 
@@ -164,7 +139,14 @@ Software de uso interno. Todos los derechos reservados.
 
 ## 🔄 Historial de Versiones
 
-### v2.1.0 - Febrero 16, 2026 (Actual)
+### v2.2.0 - Febrero 2026 (Actual)
+- Salario prorrateado primer mes según fecha de ingreso: `(Salario/30) × días trabajados`
+- ISR con ingreso anual proyectado: salario primer mes + (salario × meses restantes)
+- IHSS calculado sobre salario efectivo del periodo (prorrateado en primer mes)
+- Configuración IHSS con EM + IVM
+- Fecha de ingreso laboral en formulario de empleados
+
+### v2.1.0 - Febrero 16, 2026
 - Selector de mes en Boleta de Pago (periodo del 20 al 20 automatico)
 - Historico de Pagos rediseñado: tabla simplificada, paginacion, modal de detalle
 - PDFs con logo CNI y colores institucionales (boleta y auditoria)
