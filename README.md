@@ -77,14 +77,14 @@ python app.py
 
 ## 📦 Compilar Ejecutable (Windows)
 
-**⚠️ Debes compilar en Windows nativo** (no WSL) para crear el `.exe`:
+**Automático (GitHub Actions):** Al hacer push de un tag `v*` (ej. `git push origin v2.2.0`), GitHub compila en Windows y adjunta el ZIP al release. También: **Actions → Build Windows Release → Run workflow**.
 
+**Manual en Windows nativo:**
 ```cmd
 pip install -r requirements.txt
 build.bat
 ```
-
-El ejecutable se genera en `dist\SistemaPagosCNI\SistemaPagosCNI.exe`. Para distribuir, comprimir esa carpeta en `SistemaPagosCNI_v2.2.0_Windows.zip`.
+El ejecutable se genera en `dist\SistemaPagosCNI\SistemaPagosCNI.exe`.
 
 ---
 
