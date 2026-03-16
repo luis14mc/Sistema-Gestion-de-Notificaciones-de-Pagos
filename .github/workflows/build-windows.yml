@@ -14,6 +14,9 @@ on:
         required: true
         default: 'v2.2.0'
 
+permissions:
+  contents: write
+
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -33,22 +36,38 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build executable
-        run: pyinstaller --clean app_rrhh_cni.spec
+        run: pyinstaller --clean --noconfirm app_rrhh_cni.spec
+
+      - name: Verify build
+        run: |
+          if (!(Test-Path dist\SistemaPagosCNI\SistemaPagosCNI.exe)) {
+            Write-Error "Build failed - exe not found"
+            exit 1
+          }
+          Get-ChildItem dist\SistemaPagosCNI
+
+      - name: Set version
+        id: version
+        run: |
+          if ("${{ github.event_name }}" -eq "push" -and "${{ github.ref_type }}" -eq "tag") {
+            echo "tag=${{ github.ref_name }}" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "tag=${{ github.event.inputs.tag }}" >> $env:GITHUB_OUTPUT
+          }
 
       - name: Create ZIP
         id: zip
         run: |
-          $tag = "${{ github.ref_name }}"
-          if ($tag -eq "") { $tag = "${{ github.event.inputs.tag }}" }
+          $tag = "${{ steps.version.outputs.tag }}"
           $zip = "SistemaPagosCNI_${tag}_Windows.zip"
-          Compress-Archive -Path dist\SistemaPagosCNI -DestinationPath $zip
+          Compress-Archive -Path dist\SistemaPagosCNI -DestinationPath $zip -Force
           echo "zip=$zip" >> $env:GITHUB_OUTPUT
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name || github.event.inputs.tag }}
-          name: Sistema de Pagos CNI ${{ github.ref_name || github.event.inputs.tag }}
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Sistema de Pagos CNI ${{ steps.version.outputs.tag }}
           files: ${{ steps.zip.outputs.zip }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
