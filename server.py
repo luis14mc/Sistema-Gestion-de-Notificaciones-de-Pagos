@@ -8,7 +8,7 @@ Software Developer | luismartinez.94mc@gmail.com
 Versión 2.2.0 - 12 de Marzo 2026
 Estado: Producción
 """
-import os, sqlite3, smtplib, json, calendar
+import os, sys, sqlite3, smtplib, json, calendar
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_file
 from fpdf import FPDF
@@ -18,7 +18,12 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# En ejecutable PyInstaller: guardar DB y reportes junto al .exe (persistente)
+# En desarrollo: usar directorio del script
+if getattr(sys, 'frozen', False):
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "rrhh_cni.db")
 REPORTES_DIR = os.path.join(BASE_DIR, "reportes_pagos_RRHH")
 MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
