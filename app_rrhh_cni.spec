@@ -16,6 +16,7 @@ added_files = [
     ('templates', 'templates'),
     ('static', 'static'),
     ('img', 'img'),
+    ('rrhh_cni_seed.db', '.'),
 ]
 
 hidden = [

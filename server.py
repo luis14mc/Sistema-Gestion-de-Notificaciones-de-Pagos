@@ -22,9 +22,16 @@ from email import encoders
 # En desarrollo: usar directorio del script
 if getattr(sys, 'frozen', False):
     BASE_DIR = os.path.dirname(sys.executable)
+    # Primera ejecucion: copiar BD seed con config CNI (techo, correo, ISR)
+    DB_PATH = os.path.join(BASE_DIR, "rrhh_cni.db")
+    if not os.path.exists(DB_PATH):
+        seed = os.path.join(sys._MEIPASS, "rrhh_cni_seed.db")
+        if os.path.exists(seed):
+            import shutil
+            shutil.copy(seed, DB_PATH)
 else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "rrhh_cni.db")
+    DB_PATH = os.path.join(BASE_DIR, "rrhh_cni.db")
 REPORTES_DIR = os.path.join(BASE_DIR, "reportes_pagos_RRHH")
 MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
          "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
