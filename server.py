@@ -178,9 +178,9 @@ def _es_primer_mes_empleado(fecha_ingreso, anio_periodo, mes_periodo):
 
 def _salario_prorrateado_primer_mes(salario_base, fecha_ingreso, anio_periodo, mes_periodo):
     """
-    Salario del primer mes prorrateado por dias trabajados.
-    sueldo_dias = salario_base/30; Sueldo_mes_primero = sueldo_dias * cantidad_dias
-    Si no es primer mes, retorna salario_base completo.
+    Salario del primer mes prorrateado por dias trabajados (ref: cambios.md).
+    sueldo_diario = salario_base/30; salario_mes_1 = sueldo_diario * dias_trabajados
+    Dias trabajados = desde dia_ingreso hasta fin de mes (dias reales).
     """
     if not _es_primer_mes_empleado(fecha_ingreso, anio_periodo, mes_periodo):
         return salario_base
@@ -228,9 +228,9 @@ def _meses_trabajados_en_anio(fecha_ingreso, anio):
 # ── Calculo ISR Progresivo (Anual con deducciones) ───────────────
 def _calcular_isr(salario, db=None, meses_trabajados=12, salario_periodo_actual=None):
     """
-    Calcula ISR mensual segun formula Honduras.
-    Si salario_periodo_actual se pasa (prorrateado primer mes), se usa para Ingreso_Anual.
-    Deducciones: gastos_medicos prorrateado por meses + deducible_ivm * meses_trabajados.
+    ISR segun proyeccion fiscal Honduras (ref: cambios.md).
+    Ingreso Anual = salario_mes_1 + (sueldo_base * (n-1)); n = meses a trabajar.
+    Deducciones: gastos_medicos anual prorrateado + deducible_ivm * meses.
     """
     close_db = False
     if db is None:
@@ -294,9 +294,8 @@ def _calcular_isr(salario, db=None, meses_trabajados=12, salario_periodo_actual=
 # ── Calculo IHSS ────────────────────────────────────────────────
 def _calcular_ihss(salario, db=None, salario_periodo_actual=None):
     """
-    Calcula IHSS mensual del empleado (EM + IVM).
-    IHSS = Salario Base × (Tasa EM + Tasa IVM) / 100
-    Si salario_periodo_actual se pasa (prorrateado primer mes), se usa en lugar de salario.
+    IHSS sobre salario real del periodo (ref: cambios.md).
+    Primer mes: basado en salario_mes_1 (prorrateado). Techo vigente CNI.
     """
     close_db = False
     if db is None:
@@ -315,7 +314,7 @@ def _calcular_ihss(salario, db=None, salario_periodo_actual=None):
         cfg = dict(config)
         tasa_em = cfg.get("tasa_em") or 2.5
         tasa_ivm = cfg.get("tasa_ivm") or 2.5
-        techo = cfg.get("techo_mensual") or 12000.00
+        techo = cfg.get("techo_mensual") or 11903.13
     
     sal_efectivo = salario_periodo_actual if salario_periodo_actual is not None else salario
     salario_base = min(sal_efectivo, techo)
