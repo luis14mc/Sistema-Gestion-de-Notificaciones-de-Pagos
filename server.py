@@ -54,7 +54,9 @@ def init_db():
         usuario TEXT DEFAULT '', contrasena TEXT DEFAULT '',
         emisor TEXT DEFAULT 'Servicios Online', remitente_display TEXT DEFAULT ''
     )''')
-    c.execute("INSERT OR IGNORE INTO smtp_config (id) VALUES (1)")
+    # Valores por defecto CNI (correo institucional - usuario debe ingresar contrasena)
+    c.execute("""INSERT OR IGNORE INTO smtp_config (id, servidor, puerto, usuario, emisor, remitente_display)
+        VALUES (1, 'smtp.office365.com', 587, 'info@cni.hn', 'Servicios Online', 'notificaciones@cni.hn')""")
     c.execute('''CREATE TABLE IF NOT EXISTS historico_pagos (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         empleado_id INTEGER, cod_empleado TEXT, nombre_empleado TEXT,
@@ -127,13 +129,14 @@ def init_db():
         id INTEGER PRIMARY KEY CHECK (id=1),
         tasa_em REAL DEFAULT 2.5,
         tasa_ivm REAL DEFAULT 2.5,
-        techo_mensual REAL DEFAULT 12000.00
+        techo_mensual REAL DEFAULT 11903.13
     )''')
     cols_ihss = {r[1] for r in c.execute("PRAGMA table_info(ihss_config)").fetchall()}
     if "tasa_ivm" not in cols_ihss:
         c.execute("ALTER TABLE ihss_config ADD COLUMN tasa_ivm REAL DEFAULT 2.5")
         c.execute("UPDATE ihss_config SET tasa_ivm = 2.5 WHERE tasa_ivm IS NULL")
-    c.execute("INSERT OR IGNORE INTO ihss_config (id, tasa_em, tasa_ivm, techo_mensual) VALUES (1, 2.5, 2.5, 12000.00)")
+    # Techo IHSS vigente CNI 2026 (L 11,903.13)
+    c.execute("INSERT OR IGNORE INTO ihss_config (id, tasa_em, tasa_ivm, techo_mensual) VALUES (1, 2.5, 2.5, 11903.13)")
     
     conn.commit(); conn.close()
 
@@ -307,7 +310,7 @@ def _calcular_ihss(salario, db=None, salario_periodo_actual=None):
     if not config:
         tasa_em = 2.5
         tasa_ivm = 2.5
-        techo = 12000.00
+        techo = 11903.13
     else:
         cfg = dict(config)
         tasa_em = cfg.get("tasa_em") or 2.5
@@ -697,9 +700,9 @@ def api_ihss_get():
         d = dict(row)
         d.setdefault("tasa_em", 2.5)
         d.setdefault("tasa_ivm", 2.5)
-        d.setdefault("techo_mensual", 12000.00)
+        d.setdefault("techo_mensual", 11903.13)
         return jsonify(d)
-    return jsonify({"tasa_em": 2.5, "tasa_ivm": 2.5, "techo_mensual": 12000.00})
+    return jsonify({"tasa_em": 2.5, "tasa_ivm": 2.5, "techo_mensual": 11903.13})
 
 @app.route("/api/ihss", methods=["POST"])
 def api_ihss_save():
